@@ -1,26 +1,5 @@
 import liblo as _liblo
-import lilv
-
-# first of all we load all the lv2 plugins on the system
-# in order to determine default, minimum and max of all parameters
-w = lilv.World()
-w.load_all()
-ranges = {}
-for pl in w.get_all_plugins():
-    ranges[str(pl.get_name())] = {
-        str(pl.get_port(n).get_name()):
-        [float(v) for v in pl.get_port(n).get_range() if v is not None and v.is_float()]
-        for n in range(pl.get_num_ports())
-    }
-
-
-# sadness is due to difference between lv2 "parameter id" and carla parameter id.
-pl['Noize Mak3r']['sad_name'] = {
-    'osc1tune': 20,
-    'osc1finetune': 22,
-    'osc2tune': 21,
-    'osc2finetune': 23,
-}
+import atexit
 
 
 # Carla callback opcodes - https://github.com/falkTX/Carla/blob/2a6a7de04f75daf242ae9d8c99b349ea7dc6ff7f/source/backend/CarlaBackend.h
@@ -93,7 +72,7 @@ class OSCInterface(object):
         )
 
     def on_x(self, value):
-        print(float(value) / 31500)
+        # print(float(value) / 31500)
         self.selected_plugin_id = 0
         self.parameter_index = 20
         
@@ -105,7 +84,7 @@ class OSCInterface(object):
         )
 
     def on_y(self, value):
-        print(value)
+        # print(value)
         _liblo.send(
             self.carla_addr_udp,
             f'/Carla/{self.selected_plugin_id}/set_parameter_value',

@@ -2,6 +2,7 @@ from wacosc.xinput import find_event_files
 from wacosc.carla import carla
 from select import select
 from struct import unpack
+from sys import stderr
 
 
 class ReactiveDict:
@@ -11,7 +12,11 @@ class ReactiveDict:
 
     def __setitem__(self, key, value):
         self.__dict__[key] = value
-        getattr(self.handler, f'on_key')(value)
+        if key not in ('__dict__', 'handler'):
+            try:
+                getattr(self.handler, f'on_{key}')(value)
+            except AttributeError as e:
+                print(str(e), file=stderr)
 
     def __getitem__(self, key):
         return self.__dict__[key]
@@ -22,22 +27,26 @@ class ReactiveDict:
         return getattr(self, '__dict__')
 
     def __setattr__(self, key, value):
-        setattr(self.__dict__, key, value)
+        self[key] = value
+
+    def items(self): return self['__dict__'].items()
+    def keys(self): return self['__dict__'].keys()
+    def values(self): return self['__dict__'].values()
 
 
 stylus = ReactiveDict(carla, {
     'x': 0,
     'y': 0,
-    'tilt x': 0,
-    'tilt y': 0,
+    'tilt_x': 0,
+    'tilt_y': 0,
     'erasing': 'NO',
     'near': 'NO',
     'pressing': 'OFF',
     'pressure': 0,
     'distance': 0,
-    'stylus button 1': 'OFF',
-    'stylus button 2': 'OFF',
-    '?': '',
+    'stylus_butto_1': 'OFF',
+    'stylus_button_2': 'OFF',
+    'unknown': '',
 })
 
 def handle_stylus(timestamp, usecond, type_, code, value):
@@ -52,11 +61,11 @@ def handle_stylus(timestamp, usecond, type_, code, value):
             stylus['pressing'] = 'ON' if value else 'OFF'
         # it is really hard to press button1 and button2 together
         elif code == 331:
-            stylus['stylus button 1'] = 'ON' if value else 'OFF'
+            stylus['stylus_button_1'] = 'ON' if value else 'OFF'
         elif code == 332:
-            stylus['stylus button 2'] = 'ON' if value else 'OFF'
+            stylus['stylus_button_2'] = 'ON' if value else 'OFF'
         else:
-            stylus['?'] = f'BUTTONS {code} {value}'
+            stylus['unknown'] = f'BUTTONS {code} {value}'
 
     elif type_ == 3:
         if code == 0:
@@ -64,13 +73,12 @@ def handle_stylus(timestamp, usecond, type_, code, value):
                 stylus['near'] = 'NO'
             else:
                 stylus['x'] = value
-                osc.on_x(value)
         elif code == 1:
             stylus['y'] = value
         elif code == 26:
-            stylus['tilt x'] = value
+            stylus['tilt_x'] = value
         elif code == 27:
-            stylus['tilt y'] = value
+            stylus['tilt_y'] = value
         elif code == 24:
             stylus['pressure'] = value
         elif code == 25:
@@ -78,24 +86,24 @@ def handle_stylus(timestamp, usecond, type_, code, value):
         elif code == 40:
             stylus['erasing'] = 'NO'
         else:
-            stylus['?'] = f'ABS {code} {value}'
+            stylus['unknown'] = f'ABS {code} {value}'
     else:
-        stylus['?'] = f'{type_} {code} {value}'
+        stylus['unknown'] = f'{type_} {code} {value}'
 
 
-pad = {
-    '?': '',
-}
+pad = ReactiveDict(carla, {
+    'unknown': '',
+})
 def handle_pad(timestamp, usecond, type_, code, value):
     if type_ in (0, 4):
         return  # SYN or MISC (serial 1954545779)
     elif type_ == 1:  # BUTTONS
         if code == 256:
             # how can we know the led value?
-            pad['main button'] = 'ON' if value else 'OFF'
+            pad['main_button'] = 'ON' if value else 'OFF'
         elif code in range(257, 362):
-            pad[f'button {code}'] = 'ON' if value else 'OFF'
-        pad['?'] = f'BUTTONS {code} {value}'
+            pad[f'button_{code}'] = 'ON' if value else 'OFF'
+        pad['unknown'] = f'BUTTONS {code} {value}'
 
     elif type_ == 3:
         if code == 8:
@@ -103,18 +111,18 @@ def handle_pad(timestamp, usecond, type_, code, value):
         elif code == 40:
             return # pad['WTF'] = value  # 0 or 15
         else:
-            pad['?'] = f'ABS {code} {value}'
+            pad['unknown'] = f'ABS {code} {value}'
     else:
-        pad['?'] = f'{type_} {code} {value}'
+        pad['unknown'] = f'{type_} {code} {value}'
 
-touch = {
-    '?': '',
+touch = ReactiveDict(carla, {
+    'unknown': '',
     'x': '',
     'y': '',
     # 'touching': 'NO',
     'fingers': 0,
     '0': {}
-}
+})
 last_slot = '0'
 def handle_touch(timestamp, usecond, type_, code, value):
     global last_slot
@@ -140,7 +148,7 @@ def handle_touch(timestamp, usecond, type_, code, value):
             if value:
                 touch['fingers'] = 5
         else:
-            touch['?'] = f'BUTTONS {code} {value}'
+            touch['unknown'] = f'BUTTONS {code} {value}'
 
     elif type_ == 3:
         if code in (48, 49):
@@ -160,9 +168,9 @@ def handle_touch(timestamp, usecond, type_, code, value):
         elif code == 54:
             touch[last_slot]['y'] = value
         else:
-            touch['?'] = f'ABS {code} {value}'
+            touch['unknown'] = f'ABS {code} {value}'
     else:
-        touch['?'] = f'{type_} {code} {value}'
+        touch['unknown'] = f'{type_} {code} {value}'
 
 
 
@@ -180,11 +188,11 @@ def handle_wacom():
             break
         reading = select(files.keys(), [], [])[0]
         for fno in reading:
-            if 'Pen' in fphats[files[fno].name]:
+            if 'Pen' in fpaths[files[fno].name]:
                 handle_stylus(*unpack('LLHHi', files[fno].read(24)))
-            if 'Pad' in fphats[files[fno].name]:
+            if 'Pad' in fpaths[files[fno].name]:
                 handle_pad(*unpack('LLHHi', files[fno].read(24)))
-            if 'Finger' in fphats[files[fno].name]:
+            if 'Finger' in fpaths[files[fno].name]:
                 handle_touch(*unpack('LLHHi', files[fno].read(24)))
 
     for f in files.values():

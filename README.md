@@ -32,6 +32,7 @@ So this project isn't indended to be used by "non-technical people"
 
 And it is pretty limited in compatibility, at least currently.
 
+The code itself is probably naive and hacked together
 
 # Project Structure
 
@@ -77,7 +78,11 @@ so for each plugin we get the parameters name, default, minimum and maxium value
 
 carla notifies through osc when plugins are added on the patchbay.
 
-carla allow the parameter value to be set through osc, **but I wasn't able to find the mappings between parameter id and parameter name** in carla
+carla allow the parameter value to be set through osc, **but I wasn't able to find the mappings between parameter id and parameter name** in carla,
+maybe [here](https://github.com/falkTX/Carla/blob/25c61989de0cfe55e4ff62af002403c9acaa1bd6/source/backend/engine/CarlaEngineOscSend.cpp) but i'm not sure.
+
+[here's](https://github.com/falkTX/Carla/blob/25c61989de0cfe55e4ff62af002403c9acaa1bd6/source/backend/engine/CarlaEngineOscHandlers.cpp) instead the carla code that listens to our osc calls
+
 
 #### to get that mapping
 
@@ -86,7 +91,8 @@ and I annotate them in `plugins.py` file
 
 ## plugins.py
 
-code that uses lilv and dictionaries made as explained above
+code that uses lilv and dictionaries made as explained above (in `carla.py` explaination)
+
 
 # Special People
 
@@ -100,7 +106,7 @@ Install python, carla, lilv.
 Create and activate a virtualenv. then:
 
 ```bash
-git clone https://framagit.org/castx/wacosc.git
+git clone https://framagit.org/castix/wacosc.git
 cd wacosc
 pip install Cython
 pip install -e .
@@ -111,3 +117,9 @@ pip install -e .
 I run archlinux, with pipewire on a thinkpad x230.
 I am using a wacom intuos pro S that Valentina sold to me for 75€ (in mint condition)
 the wireless kit is not working so well, because of the battery
+
+## see it in action
+
+### 2022-05-22 GBE
+
+Let it happen
