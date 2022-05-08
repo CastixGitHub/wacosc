@@ -136,20 +136,24 @@ I acknoledge Rico, Magenta, Tab and a few others for supporting the idea and for
 
 Install python, carla, lilv.
 
-Create and activate a virtualenv. then:
-
 ```bash
 git clone https://framagit.org/castix/wacosc.git
 cd wacosc
+python -m venv --system-site-packages venv
+. venv/bin/activate
 pip install Cython
-pip install -e .
+pip install -e ".[all]"
 ```
+
+`--system-site-packages` is required in order to match the system-wide lilv bindings.
 
 # my experiment environment
 
 I run archlinux, with pipewire on a thinkpad x230.
+
 I am using a wacom intuos pro S that Valentina sold to me for 75€ (in mint condition)
-the wireless kit is not working so well, because of the battery
+
+The wireless kit is not working so well, because the battery doesn't hold charge
 
 ## see it in action
 

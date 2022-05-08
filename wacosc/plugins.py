@@ -14,7 +14,7 @@ for pl in w.get_all_plugins():
 
 
 # sadness is due to difference between lv2 "parameter id" and carla parameter id.
-pl['Noize Mak3r']['sad_name'] = {
+ranges['Noize Mak3r']['sad_name'] = {
     'osc1tune': 20,
     'osc1finetune': 22,
     'osc2tune': 21,

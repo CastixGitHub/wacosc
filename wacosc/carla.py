@@ -1,3 +1,4 @@
+from wacosc.plugins import ranges
 import liblo as _liblo
 import atexit
 
@@ -72,24 +73,24 @@ class OSCInterface(object):
         )
 
     def on_stylus_x(self, value):
-        #print(float(value) / 31500)
-        self.selected_plugin_id = 0
-        self.parameter_index = 20
+        value = float(value) / 31500
+
+        plugin_id = 0
         
         _liblo.send(
             self.carla_addr_udp,
-            f'/Carla/{self.selected_plugin_id}/set_parameter_value',
+            f'/Carla/{plugin_id}/set_parameter_value',
             self.parameter_index,
-            float(value) / 31500
+            value
         )
 
     def on_stylus_y(self, value):
-        # print(value)
+        value = float(value) / 19685
         _liblo.send(
             self.carla_addr_udp,
-            f'/Carla/{self.selected_plugin_id}/set_parameter_value',
+            f'/Carla/{plugin_id}/set_parameter_value',
             self.parameter_index,
-            float(value) / 31500
+            value
         )
 
     def on_touch_x(self, value):
@@ -98,3 +99,6 @@ class OSCInterface(object):
         
 
 carla = OSCInterface()
+
+if __name__ == '__main__':
+    print(carla.plugins)
