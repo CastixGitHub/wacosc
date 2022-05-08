@@ -65,9 +65,9 @@ the `handle_*` functions are just setting the `stylus`, `pad` and `touch` object
 they are **reactive** objects and automagically call the **carla** osc methods...........
 
 
-## curses.py
+## tui.py
 
-code to show/debug the inputs in a fancy way
+code to show/debug the inputs using `curses`
 
 ## carla.py
 

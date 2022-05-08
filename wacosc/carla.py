@@ -71,8 +71,8 @@ class OSCInterface(object):
             plugin_id, note, velocity
         )
 
-    def on_x(self, value):
-        # print(float(value) / 31500)
+    def on_stylus_x(self, value):
+        #print(float(value) / 31500)
         self.selected_plugin_id = 0
         self.parameter_index = 20
         
@@ -83,7 +83,7 @@ class OSCInterface(object):
             float(value) / 31500
         )
 
-    def on_y(self, value):
+    def on_stylus_y(self, value):
         # print(value)
         _liblo.send(
             self.carla_addr_udp,

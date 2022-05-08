@@ -1,40 +1,11 @@
 from wacosc.xinput import find_event_files
 from wacosc.carla import carla
+from wacosc.reactivedict import ReactiveDict
 from select import select
 from struct import unpack
-from sys import stderr
 
 
-class ReactiveDict:
-    def __init__(self, handler, initial_data):
-        self.handler = handler
-        self.__dict__ = initial_data
-
-    def __setitem__(self, key, value):
-        self.__dict__[key] = value
-        if key not in ('__dict__', 'handler'):
-            try:
-                getattr(self.handler, f'on_{key}')(value)
-            except AttributeError as e:
-                print(str(e), file=stderr)
-
-    def __getitem__(self, key):
-        return self.__dict__[key]
-
-    def __getattr__(self, key):
-        if key != '__dict__':
-            return getattr(self.__dict__, key)
-        return getattr(self, '__dict__')
-
-    def __setattr__(self, key, value):
-        self[key] = value
-
-    def items(self): return self['__dict__'].items()
-    def keys(self): return self['__dict__'].keys()
-    def values(self): return self['__dict__'].values()
-
-
-stylus = ReactiveDict(carla, {
+stylus = ReactiveDict(carla, 'stylus', {
     'x': 0,
     'y': 0,
     'tilt_x': 0,
@@ -91,7 +62,7 @@ def handle_stylus(timestamp, usecond, type_, code, value):
         stylus['unknown'] = f'{type_} {code} {value}'
 
 
-pad = ReactiveDict(carla, {
+pad = ReactiveDict(carla, 'pad', {
     'unknown': '',
 })
 def handle_pad(timestamp, usecond, type_, code, value):
@@ -115,10 +86,10 @@ def handle_pad(timestamp, usecond, type_, code, value):
     else:
         pad['unknown'] = f'{type_} {code} {value}'
 
-touch = ReactiveDict(carla, {
+touch = ReactiveDict(carla, 'touch', {
     'unknown': '',
-    'x': '',
-    'y': '',
+    'x': 0,
+    'y': 0,
     # 'touching': 'NO',
     'fingers': 0,
     '0': {}
