@@ -18,7 +18,7 @@ class ReactiveDict:
                 # print(str(e), file=stderr)
 
     def __getitem__(self, key):
-        return self.__dict__[key]
+        return self.__dict__.get(key, None)
 
     def __getattr__(self, key):
         if key != '__dict__':

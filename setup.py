@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 install_requires = [
     'Cython',  # this is somewhat ignored... must be installed before this package itself
     'pyliblo',
+    'evdev',
     'IPython',
 ]
 

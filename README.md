@@ -38,19 +38,35 @@ The code itself is probably naive and hacked together
 
 ## xinput.py
 
+#### already deprecated, use evdev.py instead
+
 code to identify the `/dev/eventXX` files
 
 it has a function named `find_event_files` that allows you to get a dictionary that maps like this:
 
 ```
 {
-    '/dev/input/event15': 'Wacom Intuos Pro S (WL) Pad',
-    '/dev/input/event16': 'Wacom Intuos Pro S (WL) Finger',
-    '/dev/input/event17': 'Wacom Intuos Pro S (WL) Pen',
+    "/dev/input/event10": "Wacom Intuos Pro S Pad",
+    "/dev/input/event11": "Wacom Intuos Pro S Finger",
+    "/dev/input/event17": "Wacom Intuos Pro S Pen Pen (0x74800073)",
+    "/dev/input/event9": "Wacom Intuos Pro S Pen"
 }
 ```
 
-this module can also be called with `python wacosc/xinput.py` for detection debugging purposes.
+this module can also be called with `python -m wacosc.xinput` for detection debugging purposes.
+
+## evdev.py
+
+my assumption about xinput ID == event ID was totally wrong.
+evdev instead is the right way to gather information through the kernel.
+```
+{
+    "/dev/input/event19": "Wacom Intuos Pro S Finger",
+    "/dev/input/event18": "Wacom Intuos Pro S Pad",
+    "/dev/input/event17": "Wacom Intuos Pro S Pen"
+}
+```
+`python -m wacosc.xinput`
 
 ## wacom.py
 

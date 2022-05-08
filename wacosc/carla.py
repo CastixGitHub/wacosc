@@ -91,6 +91,9 @@ class OSCInterface(object):
             self.parameter_index,
             float(value) / 31500
         )
+
+    def on_touch_x(self, value):
+        print('touch', value)
         
         
 

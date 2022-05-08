@@ -1,4 +1,4 @@
-from wacosc.xinput import find_event_files
+from wacosc.evdev import find_event_files
 from wacosc.carla import carla
 from wacosc.reactivedict import ReactiveDict
 from select import select
@@ -122,6 +122,7 @@ def handle_touch(timestamp, usecond, type_, code, value):
             touch['unknown'] = f'BUTTONS {code} {value}'
 
     elif type_ == 3:
+        print('here', type_, code, last_slot)
         if code in (48, 49):
             pass  # skip major and minor for the moment...
         elif code == 57:
@@ -131,6 +132,7 @@ def handle_touch(timestamp, usecond, type_, code, value):
         elif code == 1:
             touch['y'] = value
         elif code == 47:
+            print('code 47', last_slot, touch[last_slot])
             last_slot = str(value)
             if last_slot not in touch:
                 touch[last_slot] = {}
