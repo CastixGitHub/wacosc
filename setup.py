@@ -3,9 +3,16 @@ from setuptools import setup, find_packages
 install_requires = [
     'Cython',  # this is somewhat ignored... must be installed before this package itself
     'pyliblo',
-    'evdev',
-    'IPython',
 ]
+
+extras_require= {
+    'ipython': ['IPython'],
+    'evdev': ['evdev'],
+    'eviocgname': ['ioctl_opt'],
+}
+
+extras_require['all'] = [dep for deps in extras_require.values() for dep in deps]
+
 
 setup(
     name='WacOsc',
@@ -15,7 +22,8 @@ setup(
     author_email='castix@autistici.org',
     packages=find_packages(),
     install_requires=install_requires,
-        classifiers=[
+    extras_require=extras_require,
+    classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: OS Independent",

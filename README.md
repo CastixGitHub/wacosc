@@ -18,9 +18,11 @@ This project was made for the 19th GBE (Gara delle Batterie Elettroniche)
 
 6. lilv
 
+7. root access
+
 ## Brief Description 
 
-XInput is needed to get the event devices for the pen, pad and finger events
+evdev is used to get the event devices for the pen, pad and finger events
 
 Using `select`  we poll events on those files, unpack and handle them
 
@@ -36,9 +38,10 @@ The code itself is probably naive and hacked together
 
 # Project Structure
 
-## xinput.py
+## getting the devices mapping
+### xinput.py
 
-#### already deprecated, use evdev.py instead
+##### already deprecated, use evdev.py instead
 
 code to identify the `/dev/eventXX` files
 
@@ -55,7 +58,11 @@ it has a function named `find_event_files` that allows you to get a dictionary t
 
 this module can also be called with `python -m wacosc.xinput` for detection debugging purposes.
 
-## evdev.py
+### evdev.py
+
+##### use this only if you encouter issues with eviocgname.py
+
+`pyton-evdev` dependency is needed to use this module.
 
 my assumption about xinput ID == event ID was totally wrong.
 evdev instead is the right way to gather information through the kernel.
@@ -66,7 +73,17 @@ evdev instead is the right way to gather information through the kernel.
     "/dev/input/event17": "Wacom Intuos Pro S Pen"
 }
 ```
-`python -m wacosc.xinput`
+`# python -m wacosc.xinput`
+
+### eviocgname.py
+
+we list /dev/input devices and use `ioctl` to request the name directly  from the hardware.
+
+You can optionally install the `ioctl_opt` package to get actual input.h equivalents, for other informations, read the source code.
+
+It is optional because I defined a constant value for eviocgname(1024)
+
+`# python -m wacosc.eviocgname`
 
 ## wacom.py
 
