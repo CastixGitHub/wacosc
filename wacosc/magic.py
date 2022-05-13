@@ -52,20 +52,21 @@ class MagicHandler:
 
     def __call__(self, value):
         """Here's where the magic happens"""
-        print(f'magic on {self.kind}.{self.key} {self.value["plugin_name"]}')
-        plugin_name = self.value['plugin_name']
-        plugin = self.osc.plugin_by_name(plugin_name)
-        if plugin is None:
-            return
-        parameter_name = self.value['parameter_name']
-        parameter_id = plugin['ranges']['sad_name'][parameter_name]
+        value = float(value)  # even for raw
+        try:
+            plugin_name = self.value['plugin_name']
+            plugin = self.osc.plugin_by_name(plugin_name)
+            if plugin is None:
+                return
+            parameter_name = self.value['parameter_name']
+            parameter_id = plugin['ranges']['sad_name'][parameter_name]
 
-        print(value)
-        if 'raw' != self.value['expected_value_kind']:
-            value = self.normalize_value(value)
-        if 'midi' == self.value['expected_value_kind']:
-            value = self.normalized_to_midi(value)
-        print(value)
+            if 'raw' != self.value['expected_value_kind']:
+                value = self.normalize_value(value)
+            if 'midi' == self.value['expected_value_kind']:
+                value = self.normalized_to_midi(value)
+        except Exception as e:
+            print(str(e))
 
         liblo.send(
             self.osc.carla_addr_udp,

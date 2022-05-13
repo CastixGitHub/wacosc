@@ -11,7 +11,7 @@ class ReactiveDict:
             try:
                 getattr(self.handler, f'on_{self.prefix}_{key}')(value)
             except AttributeError:
-                pass
+                print(f'on_{self.prefix}_{key} not configured')
 
     def __getitem__(self, key):
         return self.__dict__.get(key, None)

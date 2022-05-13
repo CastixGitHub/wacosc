@@ -21,6 +21,22 @@ ranges['Noize Mak3r']['sad_name'] = {
     'osc1finetune': 22,
     'osc2tune': 21,
     'osc2finetune': 23,
+    'oscmastertune': 19,
+    'transpose': 41,
+    'osc2fm': 37,
+    'volume': 2,
+}
+
+ranges['rkr NoiseGate']['sad_name'] = {
+    'Lowpass Filter': 5,
+    'Highpass Filter': 6,
+}
+
+ranges['dRowAudio. Distorsion Shaper']['sad_name'] = {
+    'x1': 5,
+    'y1': 6,
+    'x2': 7,
+    'y2': 8,
 }
 
 
