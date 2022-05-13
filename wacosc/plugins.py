@@ -23,6 +23,7 @@ ranges['Noize Mak3r']['sad_name'] = {
     'osc2finetune': 23,
 }
 
+
 if __name__ == '__main__':
     from sys import argv
     import json
@@ -31,7 +32,7 @@ if __name__ == '__main__':
             printing = ranges[argv[1]]
         except KeyError:
             print(argv[1],  'not found', file=stderr)
-            printing={}
+            printing = {}
     else:
         printing = ranges
     print(json.dumps(printing, indent=4))

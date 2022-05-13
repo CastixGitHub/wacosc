@@ -18,8 +18,8 @@ ENGINE_CALLBACK_PARAMETER_VALUE_CHANGED = 5
 class OSCInterface:
     plugins = {}
 
-    def __new__(cls, stylus, pad, touch):
-        obj = super().__new__(cls)
+    def __new__(cls, stylus, pad, touch, carla_port=22752, listen_port=22755):
+        obj = object.__new__(cls)
         for key, value in stylus.items():
             setattr(obj, f'on_stylus_{key}', MagicHandler(obj, 'stylus', key, value))
         for key, value in pad.items():
@@ -28,7 +28,7 @@ class OSCInterface:
             setattr(obj, f'on_touch_{key}', MagicHandler(obj, 'touch', key, value))
         return obj
 
-    def __init__(self, carla_port=22752, listen_port=22755):  # TODO find free listen port
+    def __init__(self, stylus, pad, touch, carla_port=22752, listen_port=22755):  # TODO find free listen port
         self.carla_addr_tcp = liblo.Address('127.0.0.1', carla_port, proto=liblo.TCP)
         self.carla_addr_udp = liblo.Address('127.0.0.1', carla_port, proto=liblo.UDP)
         self.listen_port = listen_port

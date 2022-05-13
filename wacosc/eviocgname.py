@@ -29,7 +29,7 @@ def get_device_name(fd, length=1024):
     return name[:actual_length]
 
 
-def find_event_files(grep=b'Wacom', base='/dev/input'):
+def find_event_files(grep=b'Wacom', base='/dev/input/'):
     _dict = {}
     for device in listdir(base):
         try:
