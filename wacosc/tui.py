@@ -1,5 +1,5 @@
 from wacosc.wacom import stylus, pad, touch
-from curses import wrapper
+from curses import wrapper, napms
 from time import sleep
 
 
@@ -23,7 +23,7 @@ def main(stdscr):
             i += 1
 
         stdscr.refresh()
-        sleep(0.05)
+        napms(20)
 
 
 try:

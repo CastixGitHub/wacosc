@@ -1,7 +1,38 @@
 import liblo
 
 
-TOUCHRING_MODE = 'rotated'
+def to_float_with_max(v, m):
+    return float(v) / (m - 1)
+
+
+memoized_touchring = 0.0
+
+
+def normalize_touchring(v):
+    global memoized_touchring  # pylint: disable=global-statement
+    if v == 0:
+        return memoized_touchring
+    if 0 <= v <= 12:
+        memoized_touchring = 0.0
+        return 0.0
+    if 66 <= v <= 71:
+        memoized_touchring = 1.0
+        return 1.0
+    memoized_touchring = to_float_with_max(v - 12, 66 - 12)
+    return to_float_with_max(v - 12, 66 - 12)
+
+
+normalizing_functions = {
+    'stylus.x': lambda v: to_float_with_max(v, 31500),
+    'stylus.y': lambda v: to_float_with_max(v, 19685),
+    'stylus.pressure': lambda v: to_float_with_max(v, 2048),
+    'stylus.distance': lambda v: to_float_with_max(v, 64),
+    'stylus.tilt_x': lambda v: to_float_with_max(v + 64, 128),
+    'stylus.tilt_y': lambda v: to_float_with_max(v + 64, 128),
+    'pad.touchring': normalize_touchring,
+    'touch.x': lambda v: to_float_with_max(v, 4096),
+    'touch.y': lambda v: to_float_with_max(v, 4096),
+}
 
 
 class MagicHandler:
@@ -13,32 +44,7 @@ class MagicHandler:
 
     def normalize_value(self, value):
         # see issue #3 https://framagit.org/castix/wacosc/-/issues/3
-        if self.kind == 'stylus':
-            if self.key == 'x':
-                return float(value) / 31499
-            elif self.key == 'y':
-                return float(value) / 19685
-            elif self.key == 'pressure':
-                return float(value) / 2047
-            elif self.key == 'distance':
-                return float(value) / 63
-            elif self.key in ('tilt_x', 'tilt_y'):
-                return float(value + 64) / 127
-        # elif self.kind == 'pad':
-        #     # TODO: I didn't write the rotated values and I don't mind do math to guess them
-        #     # and i don't mind creating the straight mode right now
-        #     if self.key == 'touchring':
-        #         if TOUCHRING_MODE == 'rotated':
-        #             if value == 0:
-        #                 return memoized_touchring
-        #             elif 56 <= value <= 65:
-        #                 return 0.0
-        #             elif 47 <= value <= 55:
-        #                 return 1.0
-        #             elif
-        elif self.kind == 'touch':
-            return float(value) / 4095
-        return value
+        return normalizing_functions.get(f'{self.kind}.{self.key}', lambda v: v)(value)
 
     @staticmethod
     def normalized_to_midi(value):
@@ -46,6 +52,7 @@ class MagicHandler:
 
     def __call__(self, value):
         """Here's where the magic happens"""
+        print(f'magic on {self.kind}.{self.key} {self.value["plugin_name"]}')
         plugin_name = self.value['plugin_name']
         plugin = self.osc.plugin_by_name(plugin_name)
         if plugin is None:
@@ -53,10 +60,12 @@ class MagicHandler:
         parameter_name = self.value['parameter_name']
         parameter_id = plugin['ranges']['sad_name'][parameter_name]
 
+        print(value)
         if 'raw' != self.value['expected_value_kind']:
             value = self.normalize_value(value)
         if 'midi' == self.value['expected_value_kind']:
             value = self.normalized_to_midi(value)
+        print(value)
 
         liblo.send(
             self.osc.carla_addr_udp,
