@@ -28,7 +28,7 @@ def test_get_device_name_bad_trim(monkeypatch):
 
 
 def mock_listdir(path):
-    return ['README.md']
+    return ['README.md', 'wacosc']
 
 
 def test_find_event_files(monkeypatch):
@@ -37,13 +37,6 @@ def test_find_event_files(monkeypatch):
     assert eviocgname.find_event_files(base='./') == {
         './README.md': 'Wacom intuos mock',
     }
-
-
-def test_find_event_files_permision_error(monkeypatch):
-    # permission error on actual system
-    # file not found on gitlab ci
-    monkeypatch.setattr(eviocgname, 'ioctl', mock_ioctl)
-    assert eviocgname.find_event_files() == {}
 
 
 def test_fixed_value(monkeypatch):

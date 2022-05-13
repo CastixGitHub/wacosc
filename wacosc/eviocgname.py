@@ -37,7 +37,7 @@ def find_event_files(grep=b'Wacom', base='/dev/input'):
                 name = get_device_name(dev)
             if grep in name:
                 _dict[base + device] = name.decode()
-        except (OSError, IsADirectoryError, FileNotFoundError):
+        except (OSError, IsADirectoryError):
             continue
     return _dict
 
