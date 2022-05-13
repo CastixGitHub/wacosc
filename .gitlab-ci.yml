@@ -3,6 +3,7 @@ image: "python:3.9"
 
 before_script:
   - python --version
+  - pip install Cython
   - pip install -e '.[all]'
   - pip install -e '.[testing]'
 
