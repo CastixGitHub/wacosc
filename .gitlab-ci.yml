@@ -1,0 +1,16 @@
+image: "python:3.9"
+
+
+before_script:
+  - python --version
+  - pip install -e '.[all]'
+  - pip install -e '.[testing]'
+
+test:
+  stage: test
+  script:
+  # we also provide a configuration for flake8 in setup.cfg
+  - flake8 --exit-zero --statistics --max-line-length=120
+  # stop the build if there are Python syntax errors or undefined names
+  - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+  - python -m pytest

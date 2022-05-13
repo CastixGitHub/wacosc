@@ -5,13 +5,15 @@ install_requires = [
     'pyliblo',
 ]
 
-extras_require= {
+extras_require = {
     'ipython': ['IPython'],
     'evdev': ['evdev'],
     'eviocgname': ['ioctl_opt'],
 }
 
+# all is all but tests
 extras_require['all'] = [dep for deps in extras_require.values() for dep in deps]
+extras_require['testing'] = ['pytest', 'pytest-cov', 'pytest-randomly']
 
 
 setup(
