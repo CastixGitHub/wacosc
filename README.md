@@ -61,7 +61,7 @@ it has a function named `find_event_files` that allows you to get a dictionary t
 }
 ```
 
-this module can also be called with `python -m wacosc.xinput` for detection debugging purposes.
+this module can also be called with `$ python -m wacosc.xinput` for detection debugging purposes.
 
 I am keeping this module instead of deleting it, mecause someone might want to disable the mouse behaviour
 while making music with wacosc. xinput is the way to do so, and you need the id
@@ -81,7 +81,7 @@ evdev instead is the right way to gather information through the kernel.
     "/dev/input/event17": "Wacom Intuos Pro S Pen"
 }
 ```
-`# python -m wacosc.xinput`
+`$ python -m wacosc.xinput`
 
 ### eviocgname.py
 
@@ -91,7 +91,7 @@ You can optionally install the `ioctl_opt` package to get actual input.h equival
 
 It is optional because I defined a constant value for eviocgname(1024)
 
-`# python -m wacosc.eviocgname`
+`$ python -m wacosc.eviocgname`
 
 ## wacom.py
 
@@ -139,7 +139,7 @@ code that uses lilv and dictionaries made as explained above (in `carla.py` expl
 
 this module exposes `ranges` dictionary.
 
-you can query by plugin name running like `# python -m wacosc.plugins "Noize Mak3r"`
+you can query by plugin name running like `$ python -m wacosc.plugins "Noize Mak3r"`
 
 
 # Special People
@@ -152,23 +152,26 @@ I acknoledge Rico, Magenta, Tab and a few others for supporting the idea and for
 Install python, carla, lilv.
 
 ```bash
-git clone https://framagit.org/castix/wacosc.git
-cd wacosc
-python -m venv --system-site-packages venv
-. venv/bin/activate
-pip install Cython
-pip install -e ".[all]"
+$ git clone https://framagit.org/castix/wacosc.git
+$ cd wacosc
+$ python -m venv --system-site-packages venv
+$ . venv/bin/activate
+$ pip install Cython
+$ pip install -e ".[all]"
+# echo 'KERNEL=="event*", SUBSYSTEM=="input", ATTRS{idVendor}=="056a", MODE:="0644"' > /etc/udev/rules.d/10-wacosc.rules
 ```
 
 `--system-site-packages` is required in order to match the system-wide lilv bindings.
+
+setting the udev rule is to avoid the need of running wacosc with root permissions, and you need to reconnect you wacom device then. `056a` is genuine wacom, you you have a different manufacturer, get the idVendor with `lsusb`
 
 # my experiment environment
 
 I run archlinux, with pipewire on a thinkpad x230.
 
-I am using a wacom intuos pro S that Valentina sold to me for 75€ (in mint condition)
+I am using a wacom intuos pro S (PTH-451) that <s>Valentina</s> Bianca sold to me for 75€ (in mint condition) in a [online marketplace](https://www.subito.it/annunci-italia/vendita/usato/?q=wacom+intuos+pro+s&from=top-bar)
 
-The wireless kit is not working so well, because the battery doesn't hold charge
+The wireless kit is not working so well, because the battery doesn't hold charge. after a drop the charging connector bent :facepalm:
 
 ## see it in action
 
