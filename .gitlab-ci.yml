@@ -3,6 +3,7 @@ image: "python:3.9"
 
 before_script:
   - python --version
+  - apt update
   - apt install -y liblo-dev
   - pip install Cython
   - pip install -e '.[all]'
