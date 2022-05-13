@@ -1,3 +1,5 @@
+![CI](https://framagit.org/castix/wacosc/badges/current/pipeline.svg)
+
 # WacOsc
 
 Wacom to Open Sound Control
