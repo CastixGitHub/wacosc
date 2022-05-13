@@ -54,14 +54,17 @@ it has a function named `find_event_files` that allows you to get a dictionary t
 
 ```
 {
-    "/dev/input/event10": "Wacom Intuos Pro S Pad",
-    "/dev/input/event11": "Wacom Intuos Pro S Finger",
-    "/dev/input/event17": "Wacom Intuos Pro S Pen Pen (0x74800073)",
-    "/dev/input/event9": "Wacom Intuos Pro S Pen"
+	"10": "Wacom Intuos Pro S Pad",
+    "11": "Wacom Intuos Pro S Finger",
+    "17": "Wacom Intuos Pro S Pen Pen (0x74800073)",
+    "9": "Wacom Intuos Pro S Pen"
 }
 ```
 
 this module can also be called with `python -m wacosc.xinput` for detection debugging purposes.
+
+I am keeping this module instead of deleting it, mecause someone might want to disable the mouse behaviour
+while making music with wacosc. xinput is the way to do so, and you need the id
 
 ### evdev.py
 
@@ -82,7 +85,7 @@ evdev instead is the right way to gather information through the kernel.
 
 ### eviocgname.py
 
-we list /dev/input devices and use `ioctl` to request the name directly  from the hardware.
+we list /dev/input devices and use `ioctl` to request the name directly from the hardware.
 
 You can optionally install the `ioctl_opt` package to get actual input.h equivalents, for other informations, read the source code.
 

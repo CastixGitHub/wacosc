@@ -10,13 +10,15 @@ def grep_xinput(name):
         print(str(e), file=stderr)
         return ''
 
+
 def clean_name(name):
     return ' '.join([c for c in name.split(' ') if c and c not in (' ', '⎡', '↳', '\u23a3', '\u239c')])
 
+
 def find_event_files(grep='Wacom'):
     _dict = {}
-    for name, _id in re.compile('(.*)\tid=(?P<line>\d+)').findall(grep_xinput(grep)):
-        _dict[f'/dev/input/event{_id}'] = clean_name(name)
+    for name, _id in re.compile(r'(.*)\tid=(?P<line>\d+)').findall(grep_xinput(grep)):
+        _dict[_id] = clean_name(name)
     return _dict
 
 
