@@ -1,6 +1,9 @@
+.coverage
 *.egg-info
 __pycache__
 venv
 
 \#*\#
 .\#*
+
+diagram.png

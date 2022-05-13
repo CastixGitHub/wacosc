@@ -1,7 +1,15 @@
 digraph {
+	compound=true;
+	node [ fontname="Handlee" ];
 	subgraph cluster_wacosc {
 		label="WACOSC";
 		style="dotted";
+		subgraph cluster_dev_map {
+			label="find_devices_files";
+			style="solid";
+			eviocgname
+			evdev
+		}
 		subgraph cluster_carla {
 			label="Carla";
 			style="solid";
@@ -17,11 +25,19 @@ digraph {
 			pad
 			thread
 		}
+		eviocgname -> thread [lhead=cluster_wacom]
+		evdev -> thread [lhead=cluster_wacom]
   
 		subgraph cluster_reactivedict {
-			label="reactivedict";
+			label="ReactiveDict";
 			style="solid";
 			ReactiveDict
+		}
+
+		subgraph cluster_plugins {
+			label="Plugins\n*user action needed";
+			style="solid";
+			plugins
 		}
   
 		thread -> stylus [xlabel="polling"]
@@ -33,22 +49,25 @@ digraph {
 		touch -> ReactiveDict
   
 		ReactiveDict -> OSCInterface
+		plugins -> OSCInterface
 
 		subgraph cluster_config {
-			label="Config";
+			label="Config\n*user action needed";
 			style="solid";
 			cfg_stylus [label="stylus"]
 			cfg_pad [label="pad"]
 			cfg_touch [label="touch"]
 		}
 
-		OSCInterface -> MagicHandler
+		OSCInterface -> MagicHandler [dir=both]
 
 		cfg_stylus -> MagicHandler
 		cfg_pad -> MagicHandler
 		cfg_touch -> MagicHandler
 	}
-  
-	MagicHandler -> CARLA [style="dashed" xlabel="OSC"]
-	WACOM -> thread [style="dashed" xlabel="events"]
+
+	node [shape="octagon"];
+	MagicHandler -> CARLA [style="dashed" xlabel="OSC" dir=both]
+	WACOM -> thread [style="dashed" xlabel="input events"]
+	plugins -> LILV [style="dashed" xlabel="get ranges" dir=both]
 }

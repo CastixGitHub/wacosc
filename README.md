@@ -24,9 +24,6 @@ This project was made for the 19th GBE (Gara delle Batterie Elettroniche)
 
 ## Brief Description 
 
-### confusing diagram
-![diagram](diagram.svg)
-
 evdev is used to get the event devices for the pen, pad and finger events
 
 Using `select`  we poll events on those files, unpack and handle them
@@ -42,6 +39,9 @@ And it is pretty limited in compatibility, at least currently.
 The code itself is probably naive and hacked together
 
 # Project Structure
+
+### confusing? diagram!
+![diagram](diagram.svg)
 
 ## getting the devices mapping
 ### xinput.py
