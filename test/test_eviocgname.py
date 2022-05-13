@@ -40,6 +40,8 @@ def test_find_event_files(monkeypatch):
 
 
 def test_find_event_files_permision_error(monkeypatch):
+    # permission error on actual system
+    # file not found on gitlab ci
     monkeypatch.setattr(eviocgname, 'ioctl', mock_ioctl)
     assert eviocgname.find_event_files() == {}
 
