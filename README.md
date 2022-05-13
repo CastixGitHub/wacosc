@@ -126,6 +126,10 @@ and I annotate them in `plugins.py` file
 
 code that uses lilv and dictionaries made as explained above (in `carla.py` explaination)
 
+this module exposes `ranges` dictionary.
+
+you can query by plugin name running like `# python -m wacosc.plugins "Noize Mak3r"`
+
 
 # Special People
 

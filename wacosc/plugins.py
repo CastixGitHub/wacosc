@@ -1,3 +1,5 @@
+"""WacOsc plugins.py - exposes ranges dictionary."""
+from sys import stderr
 import lilv
 
 # first of all we load all the lv2 plugins on the system
@@ -20,3 +22,16 @@ ranges['Noize Mak3r']['sad_name'] = {
     'osc2tune': 21,
     'osc2finetune': 23,
 }
+
+if __name__ == '__main__':
+    from sys import argv
+    import json
+    if len(argv) > 1:
+        try:
+            printing = ranges[argv[1]]
+        except KeyError:
+            print(argv[1],  'not found', file=stderr)
+            printing={}
+    else:
+        printing = ranges
+    print(json.dumps(printing, indent=4))
