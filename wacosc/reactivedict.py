@@ -1,6 +1,3 @@
-from sys import stderr
-
-
 class ReactiveDict:
     def __init__(self, handler, prefix, initial_data):
         self.handler = handler
@@ -13,9 +10,8 @@ class ReactiveDict:
         if key not in ('__dict__', 'handler'):
             try:
                 getattr(self.handler, f'on_{self.prefix}_{key}')(value)
-            except AttributeError as e:
+            except AttributeError:
                 pass
-                # print(str(e), file=stderr)
 
     def __getitem__(self, key):
         return self.__dict__.get(key, None)

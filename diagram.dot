@@ -1,0 +1,54 @@
+digraph {
+	subgraph cluster_wacosc {
+		label="WACOSC";
+		style="dotted";
+		subgraph cluster_carla {
+			label="Carla";
+			style="solid";
+			OSCInterface
+			MagicHandler
+		}
+		
+		subgraph cluster_wacom {
+			label="Wacom";
+			style="solid";
+			stylus
+			touch
+			pad
+			thread
+		}
+  
+		subgraph cluster_reactivedict {
+			label="reactivedict";
+			style="solid";
+			ReactiveDict
+		}
+  
+		thread -> stylus [xlabel="polling"]
+		thread -> pad
+		thread -> touch
+  
+		stylus -> ReactiveDict
+		pad -> ReactiveDict
+		touch -> ReactiveDict
+  
+		ReactiveDict -> OSCInterface
+
+		subgraph cluster_config {
+			label="Config";
+			style="solid";
+			cfg_stylus [label="stylus"]
+			cfg_pad [label="pad"]
+			cfg_touch [label="touch"]
+		}
+
+		OSCInterface -> MagicHandler
+
+		cfg_stylus -> MagicHandler
+		cfg_pad -> MagicHandler
+		cfg_touch -> MagicHandler
+	}
+  
+	MagicHandler -> CARLA [style="dashed" xlabel="OSC"]
+	WACOM -> thread [style="dashed" xlabel="events"]
+}

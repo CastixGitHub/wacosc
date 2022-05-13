@@ -24,6 +24,9 @@ This project was made for the 19th GBE (Gara delle Batterie Elettroniche)
 
 ## Brief Description 
 
+### confusing diagram
+![diagram](diagram.svg)
+
 evdev is used to get the event devices for the pen, pad and finger events
 
 Using `select`  we poll events on those files, unpack and handle them
@@ -99,6 +102,9 @@ and calls the other `handle_*` functions defined in this module itself.
 the `handle_*` functions are just setting the `stylus`, `pad` and `touch` objects's items
 they are **reactive** objects and automagically call the **carla** osc methods...........
 
+## reactive.py
+
+a `ReactiveDict` is defined here
 
 ## tui.py
 

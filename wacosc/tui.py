@@ -25,7 +25,8 @@ def main(stdscr):
         stdscr.refresh()
         sleep(0.05)
 
-try:        
+
+try:
     wrapper(main)
 except KeyboardInterrupt:
     print('interrupted.')

@@ -1,5 +1,6 @@
 """WacOsc carla.py - where handlers are defined."""
 from wacosc.plugins import ranges
+from wacosc.config import stylus, pad, touch
 import liblo
 import atexit
 
@@ -48,8 +49,10 @@ class MagicHandler:
         #             elif
         elif self.kind == 'touch':
             return float(value) / 4095
+        return value
 
-    def normalized_to_midi(self, value):
+    @staticmethod
+    def normalized_to_midi(value):
         return value * 128
 
     def __call__(self, value):
@@ -62,7 +65,7 @@ class MagicHandler:
         parameter_id = plugin['sad_name'][parameter_name]
 
         liblo.send(
-            self.carla_addr_udp,
+            self.osc.carla_addr_udp,
             f'/Carla/{plugin["_id"]}/set_parameter_value',
             parameter_id,
             value,
@@ -150,7 +153,7 @@ class OSCInterface:
         )
 
 
-carla = OSCInterface()
+carla = OSCInterface(stylus, pad, touch)
 
 
 if __name__ == '__main__':
