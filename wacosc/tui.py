@@ -19,7 +19,7 @@ def main(stdscr):
 
         i = 0
         for k, v in touch.items():
-            stdscr.addstr(i, 70, f"{k.upper().replace('_', ' ')}: {v}")
+            stdscr.addstr(i, 58, f"{k.upper().replace('_', ' ')}: {v}")
             i += 1
 
         stdscr.refresh()
