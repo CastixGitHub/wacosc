@@ -15,10 +15,11 @@ stylus = ReactiveDict(carla, 'stylus', {
     'pressing': 'OFF',
     'pressure': 0,
     'distance': 0,
-    'stylus_butto_1': 'OFF',
+    'stylus_button_1': 'OFF',
     'stylus_button_2': 'OFF',
     'unknown': '',
 })
+
 
 def handle_stylus(timestamp, usecond, type_, code, value):
     if type_ in (0, 4):
@@ -101,16 +102,20 @@ def handle_touch(timestamp, usecond, type_, code, value):
         return  # SYN or MISC (serial 1954545779)
     elif type_ == 1:  # BUTTONS
         if code == 325:
-            pass  # this is just wrong...
-            # touch['touching'] = 'YES' if value else 'NO'
-        elif code == 330:
+            if not value:
+                print('setting fingers to 0')
+                touch['fingers'] = 0
+        elif code in (325, 330):
             if value:
+                print(1, 'fingers', code)
                 touch['fingers'] = 1
         elif code == 333:
             if value:
+                print(2, 'fingers')
                 touch['fingers'] = 2
         elif code == 334:
             if value:
+                print(3, 'fingers')
                 touch['fingers'] = 3
         elif code == 335:
             if value:
@@ -122,10 +127,14 @@ def handle_touch(timestamp, usecond, type_, code, value):
             touch['unknown'] = f'BUTTONS {code} {value}'
 
     elif type_ == 3:
-        if code in (48, 49):
-            pass  # skip major and minor for the moment...
+        if code == 48:
+            touch[last_slot]['major'] = value
+        elif code == 49:
+            touch[last_slot]['minor'] = value
         elif code == 57:
-            touch['fingers'] -= 1
+            print('decrementing fingers to', touch['fingers'] - 1)
+            if touch['fingers'] > 0:
+                touch['fingers'] -= 1
         elif code == 0:
             touch['x'] = value
         elif code == 1:

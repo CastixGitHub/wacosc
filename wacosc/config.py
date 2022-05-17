@@ -37,6 +37,7 @@ pad = {
         'expected_value_kind': 'float',
     }
 }
+
 touch = {
     'x': {
         'plugin_name': 'rkr NoiseGate',
@@ -44,6 +45,11 @@ touch = {
         'expected_value_kind': 'raw',
     },
     'y': {
+        'plugin_name': 'rkr NoiseGate',
+        'parameter_name': 'Highpass Filter',
+        'expected_value_kind': 'raw',
+    },
+    '0': {
         'plugin_name': 'rkr NoiseGate',
         'parameter_name': 'Highpass Filter',
         'expected_value_kind': 'raw',

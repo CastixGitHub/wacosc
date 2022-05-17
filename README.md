@@ -20,8 +20,6 @@ This project was made for the 19th GBE (Gara delle Batterie Elettroniche)
 
 6. lilv
 
-7. root access
-
 ## Brief Description 
 
 evdev is used to get the event devices for the pen, pad and finger events
@@ -161,9 +159,28 @@ $ pip install -e ".[all]"
 # echo 'KERNEL=="event*", SUBSYSTEM=="input", ATTRS{idVendor}=="056a", MODE:="0644"' > /etc/udev/rules.d/10-wacosc.rules
 ```
 
+#### about system site packages
 `--system-site-packages` is required in order to match the system-wide lilv bindings.
 
+if you don't want to use that option or is broken/unavailable, you can also copy lilv binding to site, for example:
+```bash
+cp /usr/lib/python3.10/site-packages/lilv.py ~/virtualenvs/wacosc/lib/python3.10/site-packages/lilv.py
+```
+
+#### about the udev rule
 setting the udev rule is to avoid the need of running wacosc with root permissions, and you need to reconnect you wacom device then. `056a` is genuine wacom, you you have a different manufacturer, get the idVendor with `lsusb`
+
+## limitations
+### touch event while stylus in proximity
+TODO: what happens by changing this? https://github.com/torvalds/linux/blob/9b57f458985742bd1c585f4c7f36d04634ce1143/drivers/hid/wacom_wac.c#L836
+
+### moultitouch count fingers unreliable
+see https://github.com/torvalds/linux/blob/9b57f458985742bd1c585f4c7f36d04634ce1143/drivers/hid/wacom_wac.c#L1235
+by quoting https://www.kernel.org/doc/html/v4.14/input/event-codes.html
+> Note: In multitouch drivers, the input_mt_report_finger_count() function should be used to emit these codes. Please see multi-touch-protocol.txt for details.
+I didn't found count in that file, but seems still documented https://www.kernel.org/doc/html/latest/driver-api/input.html#c.input_mt_report_finger_count
+
+currently our counting mechanism is just wrong, probably it is better to remove it completely
 
 # my experiment environment
 

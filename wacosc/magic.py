@@ -52,7 +52,11 @@ class MagicHandler:
 
     def __call__(self, value):
         """Here's where the magic happens"""
-        value = float(value)  # even for raw
+        if not isinstance(value, dict):
+            value = float(value)  # even for raw
+        else:  # multitouch event
+            print('multitouch', value)
+            return
         try:
             plugin_name = self.value['plugin_name']
             plugin = self.osc.plugin_by_name(plugin_name)
