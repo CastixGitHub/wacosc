@@ -1,7 +1,7 @@
 from wacosc.eviocgname import find_event_files
 from wacosc.carla import carla
 from wacosc.reactivedict import ReactiveDict
-from select import select
+from select import poll
 from struct import unpack
 import logging
 
@@ -27,9 +27,7 @@ stylus = ReactiveDict(carla, 'stylus', {
 
 def handle_stylus(timestamp, usecond, type_, code, value):
     match type_:
-        case 0:
-            return
-        case 4:
+        case 0 | 4:
             return
         case 1:
             match code:
@@ -73,9 +71,7 @@ pad = ReactiveDict(carla, 'pad', {
 })
 def handle_pad(timestamp, usecond, type_, code, value):
     match type_:
-        case 0:
-            return
-        case 4:
+        case 0 | 4:
             return
         case 1:
             match code:
@@ -163,30 +159,32 @@ def handle_touch(timestamp, usecond, type_, code, value):
                     touch['unknown'] = f'ABS {code} {value}'
 
 
-from threading import Thread
-def handle_wacom():
+import trio
+async def handle_wacom():
     fpaths = find_event_files()
     files = {}
+
+    _poll = poll()
 
     for path in fpaths.keys():
         f = open(path, 'rb')
         files[f.fileno()] = f
+        _poll.register(f.fileno())
 
-    while True:
-        if killing:
-            break
-        reading = select(files.keys(), [], [])[0]
-        for fno in reading:
+    while not killing:
+        await trio.sleep(0)
+        print('poll')
+        reading = _poll.poll(0)
+        for fno, _ in reading:
+            _f = trio.wrap_file(files[fno])
             if 'Pen' in fpaths[files[fno].name]:
-                handle_stylus(*unpack('LLHHi', files[fno].read(24)))
+                handle_stylus(*unpack('LLHHi', await _f.read(24)))
             if 'Pad' in fpaths[files[fno].name]:
-                handle_pad(*unpack('LLHHi', files[fno].read(24)))
+                handle_pad(*unpack('LLHHi', await _f.read(24)))
             if 'Finger' in fpaths[files[fno].name]:
-                handle_touch(*unpack('LLHHi', files[fno].read(24)))
+                handle_touch(*unpack('LLHHi', await _f.read(24)))
 
     for f in files.values():
         f.close()
 
 killing = False
-t = Thread(target=handle_wacom)
-t.start()

@@ -3,6 +3,7 @@ from wacosc.plugins import ranges
 from wacosc.magic import MagicHandler
 from wacosc.config import stylus, pad, touch
 import liblo
+import trio
 import atexit
 
 
@@ -32,30 +33,32 @@ class OSCInterface:
         self.carla_addr_tcp = liblo.Address('127.0.0.1', carla_port, proto=liblo.TCP)
         self.carla_addr_udp = liblo.Address('127.0.0.1', carla_port, proto=liblo.UDP)
         self.listen_port = listen_port
-        self.on_start()
+        self.server_tcp = liblo.Server(self.listen_port, proto=liblo.TCP)
+        self.server_tcp.register_methods(self)
+        self.server_udp = liblo.Server(self.listen_port, proto=liblo.UDP)
+        self.server_udp.register_methods(self)
+        self.stopped = False
         atexit.register(self.on_exit)
 
-    def on_start(self):
-        print('starting osc')
-        self.server_tcp = liblo.ServerThread(self.listen_port, proto=liblo.TCP)
-        self.server_tcp.register_methods(self)
-        self.server_tcp.start()
-        self.server_udp = liblo.ServerThread(self.listen_port, proto=liblo.UDP)
-        self.server_udp.register_methods(self)
-        self.server_udp.start()
-        liblo.send(self.carla_addr_tcp, '/register', 'osc.tcp://127.0.0.1:%d/Carla' % self.listen_port)
+    async def start_udp(self):
         liblo.send(self.carla_addr_udp, '/register', 'osc.udp://127.0.0.1:%d/Carla' % self.listen_port)
-        # TODO query all current parameter values to set all buttons to the correct value
+        while not self.stopped:
+            self.server_udp.recv(0)
+            await trio.sleep(0)
+
+    async def start_tcp(self):
+        liblo.send(self.carla_addr_tcp, '/register', 'osc.tcp://127.0.0.1:%d/Carla' % self.listen_port)
+        while not self.stopped:
+            self.server_tcp.recv(0)
+            await trio.sleep(0)
+
+    # TODO on_start query all current parameter values to set all buttons to the correct value
 
     def on_exit(self):
-        # Registering with the full URL gives an error about the wrong owner, just the IP-address seems to work.
-        # liblo.send(self.carla_addr_tcp, '/unregister', 'osc.tcp://127.0.0.1:%d/Carla' % self.listen_port)
-        # liblo.send(self.carla_addr_udp, '/unregister', 'osc.udp://127.0.0.1:%d/Carla' % self.listen_port)
+        self.stopped = True
         liblo.send(self.carla_addr_udp, '/unregister', '127.0.0.1')
-        self.server_udp.stop()
         del self.server_udp
         liblo.send(self.carla_addr_tcp, '/unregister', '127.0.0.1')
-        self.server_tcp.stop()
         del self.server_tcp
 
     @liblo.make_method('/Carla/info', 'iiiihiisssssss')
