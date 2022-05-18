@@ -1,7 +1,7 @@
 from wacosc.eviocgname import find_event_files
 from wacosc.carla import carla
 from wacosc.reactivedict import ReactiveDict
-from select import select
+from select import poll, POLLIN
 from struct import unpack
 import logging
 
@@ -167,16 +167,15 @@ from threading import Thread
 def handle_wacom():
     fpaths = find_event_files()
     files = {}
+    _poll = poll()
 
     for path in fpaths.keys():
         f = open(path, 'rb')
         files[f.fileno()] = f
+        _poll.register(f, POLLIN)
 
-    while True:
-        if killing:
-            break
-        reading = select(files.keys(), [], [])[0]
-        for fno in reading:
+    while not killing:
+        for fno, _ in _poll.poll():
             if 'Pen' in fpaths[files[fno].name]:
                 handle_stylus(*unpack('LLHHi', files[fno].read(24)))
             if 'Pad' in fpaths[files[fno].name]:
