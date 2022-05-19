@@ -14,7 +14,7 @@ This project was made for the 19th GBE (Gara delle Batterie Elettroniche)
 
 3. LV2 plugins
 
-4. Python
+4. Python 3.10
 
 5. liblo
 
