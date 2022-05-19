@@ -20,18 +20,18 @@ class ReactiveDict:
         return self.__dict__.get(key, None)
 
     def __getattr__(self, key):
-        if key != '__dict__':
-            return getattr(self.__dict__, key)
-        return getattr(self, '__dict__')
+        return getattr(self.__dict__, key)
 
     def __setattr__(self, key, value):
         self[key] = value
 
     def items(self):
-        return [(k, v) for k, v in self.__dict__.items() if k not in ('handler', '__dict__')]
+        return [(k, v) for k, v in self.__dict__.items() if k not in ('handler', 'prefix', '__dict__')]
 
     def keys(self):
-        return self.__dict__.keys()
+        return [k for k in self.__dict__.keys() if k not in ('handler', 'prefix')]
 
-    def values(self):
-        return self.__dict__.values()
+    def values(self, strip=None):
+        if not strip:
+            strip = ()
+        return [v for v in self.__dict__.values() if v not in strip]
