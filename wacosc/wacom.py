@@ -1,7 +1,7 @@
 from wacosc.eviocgname import find_event_files
 from wacosc.carla import carla
 from wacosc.reactivedict import ReactiveDict
-from select import poll
+from select import poll, POLLIN
 from struct import unpack
 import logging
 
@@ -169,11 +169,10 @@ async def handle_wacom():
     for path in fpaths.keys():
         f = open(path, 'rb')
         files[f.fileno()] = f
-        _poll.register(f.fileno())
+        _poll.register(f.fileno(), POLLIN)
 
     while not killing:
         await trio.sleep(0)
-        print('poll')
         reading = _poll.poll(0)
         for fno, _ in reading:
             _f = trio.wrap_file(files[fno])
