@@ -21,8 +21,10 @@ if not getenv('SKIP_LILV', None):
 ranges.setdefault('Noize Mak3r', {})['sad_name'] = {
     'osc1tune': 20,
     'osc1finetune': 22,
+    'osc1waveform': 24,
     'osc2tune': 21,
     'osc2finetune': 23,
+    'osc2waveform': 25,
     'oscmastertune': 19,
     'transpose': 41,
     'osc2fm': 37,
