@@ -44,15 +44,11 @@ The code itself is probably naive and hacked together
 ## getting the devices mapping
 ### xinput.py
 
-##### already deprecated, use evdev.py instead
-
-code to identify the `/dev/eventXX` files
-
-it has a function named `find_event_files` that allows you to get a dictionary that maps like this:
+it has a function named `find_ids` that allows you to get a dictionary that maps like this:
 
 ```
 {
-	"10": "Wacom Intuos Pro S Pad",
+    "10": "Wacom Intuos Pro S Pad",
     "11": "Wacom Intuos Pro S Finger",
     "17": "Wacom Intuos Pro S Pen Pen (0x74800073)",
     "9": "Wacom Intuos Pro S Pen"
@@ -61,8 +57,15 @@ it has a function named `find_event_files` that allows you to get a dictionary t
 
 this module can also be called with `$ python -m wacosc.xinput` for detection debugging purposes.
 
-I am keeping this module instead of deleting it, mecause someone might want to disable the mouse behaviour
-while making music with wacosc. xinput is the way to do so, and you need the id
+my initial assumption about xinput ID == kernel event ID was totally wrong.
+
+use evdev or eviocgname modules instead is the right way to gather information through the kernel.
+
+#### you can disable the mouse movements
+just run `$ python -m wacosc.xinput --grep Wacom --action disable`
+
+and you can also enable them again
+
 
 ### evdev.py
 
@@ -70,8 +73,6 @@ while making music with wacosc. xinput is the way to do so, and you need the id
 
 `pyton-evdev` dependency is needed to use this module.
 
-my assumption about xinput ID == event ID was totally wrong.
-evdev instead is the right way to gather information through the kernel.
 ```
 {
     "/dev/input/event19": "Wacom Intuos Pro S Finger",
@@ -79,7 +80,7 @@ evdev instead is the right way to gather information through the kernel.
     "/dev/input/event17": "Wacom Intuos Pro S Pen"
 }
 ```
-`$ python -m wacosc.xinput`
+`$ python -m wacosc.evdev`
 
 ### eviocgname.py
 
