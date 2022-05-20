@@ -83,26 +83,26 @@ touch = {
     },
     '0': {
         'x': {
-            'plugin_name': 'dRowAudio: Distortion Shaper',
+            'plugin_name': 'dRowAudio. Distortion Shaper',
             'parameter_name': 'x1',
             'fn': lambda v: to_float_with_max(v, 4096),
         },
         'y': {
-            'plugin_name': 'dRowAudio: Distortion Shaper',
+            'plugin_name': 'dRowAudio. Distortion Shaper',
             'parameter_name': 'y1',
-            'fn': lambda v: to_float_with_max(v, 4096),
+            'fn': lambda v: abs(to_float_with_max(v, 4096) - 1),
         },
     },
     '1': {
         'x': {
-            'plugin_name': 'dRowAudio: Distortion Shaper',
+            'plugin_name': 'dRowAudio. Distortion Shaper',
             'parameter_name': 'x2',
             'fn': lambda v: to_float_with_max(v, 4096),
         },
         'y': {
-            'plugin_name': 'dRowAudio: Distortion Shaper',
+            'plugin_name': 'dRowAudio. Distortion Shaper',
             'parameter_name': 'y2',
-            'fn': lambda v: to_float_with_max(v, 4096),
+            'fn': lambda v: abs(to_float_with_max(v, 4096) - 1),
         },
     },
 }

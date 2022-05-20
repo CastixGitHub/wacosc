@@ -25,7 +25,11 @@ class OSCInterface:
         for key, value in pad.items():
             setattr(obj, f'on_pad_{key}', MagicHandler(obj, 'pad', key, value))
         for key, value in touch.items():
-            setattr(obj, f'on_touch_{key}', MagicHandler(obj, 'touch', key, value))
+            if key in (str(i) for i in range(10)):
+                for k, v in value.items():
+                    setattr(obj, f'on_touch{key}_{k}', MagicHandler(obj, 'touch', key, v))
+            else:
+                setattr(obj, f'on_touch_{key}', MagicHandler(obj, 'touch', key, value))
         return obj
 
     def __init__(self, stylus, pad, touch, carla_port=22752, listen_port=22755):  # TODO find free listen port

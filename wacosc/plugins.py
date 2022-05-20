@@ -36,7 +36,8 @@ ranges.setdefault('rkr NoiseGate', {})['sad_name'] = {
     'Highpass Filter': 6,
 }
 
-ranges.setdefault('dRowAudio: Distortion Shaper', {})['sad_name'] = {
+# honestly, lv2 says it's "dRowAudio: Distortion Shaper" but carla prefers '.' instead for some reason...
+ranges.setdefault('dRowAudio. Distortion Shaper', {})['sad_name'] = {
     'x1': 5,
     'y1': 6,
     'x2': 7,
