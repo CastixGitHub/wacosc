@@ -1,3 +1,4 @@
+# TODO: support wayland through libinput
 from subprocess import check_output, CalledProcessError
 from sys import stderr, argv
 import argparse

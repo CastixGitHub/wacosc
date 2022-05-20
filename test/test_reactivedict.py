@@ -2,18 +2,24 @@ from wacosc.reactivedict import ReactiveDict
 from pytest import raises
 
 
-class Handler:
+class Handler:  # is a mock better suited?
     a = None
     b = None
     c = None
-    c_handler_count = 0
+    d = None
+    cc = None
 
     def on_p_a(self, value):
         self.a = value
 
     def on_p_c(self, value):
-        self.c_handler_count += 1
         self.c = value
+
+    def on_pc_d(self, value):
+        self.d = value
+
+    def on_pc_cc(self, value):
+        self.cc = value
 
 
 def test_plain():
@@ -50,23 +56,26 @@ def test_dict_views_like():
     rd = ReactiveDict(h, 'p', {'a': 'A', 'b': 'B'})
 
     assert ['a', 'b'] == list(rd.keys())
-    assert [h, 'p', 'A', 'B'] == list(rd.values())
+    assert ['A', 'B'] == list(rd.values())
     assert [('a', 'A'), ('b', 'B')] == list(rd.items())
-    assert ['A', 'B'] == list(rd.values(strip=(h, 'p')))
+    assert [h, 'p', '', 'A', 'B'] == list(rd.values(strip=()))
 
 
 def test_deep():
     h = Handler()
     rd = ReactiveDict(h, 'p', {'a': 'A', 'b': 'B'})
-    assert h.c_handler_count == 0
     rd.c = {'c': 'C'}
     assert h.c == {'c': 'C'}
-    assert h.c_handler_count == 1
-    
-    rd.c['c'] = 'CC'
-    assert h.c == {'c': 'CC'}
-    assert h.c_handler_count == 2
 
-    rd['c']['c'] = 'CCC'
-    assert h.c == {'c': 'CCC'}
-    assert h.c_handler_count == 3
+    rd.c['c'] = 'CC'
+    assert h.c == {'c': 'C'}
+
+    rd['c']['cc'] = 'CCC'
+    assert h.cc == 'CCC'
+
+    assert rd.c.cc == 'CCC'
+
+    rd.c['d'] = 'D'
+    assert rd.c.d == 'D'
+    assert h.d == 'D'
+
