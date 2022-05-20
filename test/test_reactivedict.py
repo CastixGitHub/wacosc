@@ -79,3 +79,11 @@ def test_deep():
     assert rd.c.d == 'D'
     assert h.d == 'D'
 
+
+def test_list():
+    h = Handler()
+    rd = ReactiveDict(h, 'p', {'a': []})
+    rd.a.append(1)
+    assert h.a == [1]
+    rd.a[0:5] = (1, 2, 3, 4, 5)
+    assert h.a == [1, 2, 3, 4, 5]
