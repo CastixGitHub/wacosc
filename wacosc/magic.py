@@ -24,7 +24,7 @@ class MagicHandler:
             value = config['fn'](value)
             return plugin['_id'], parameter_id, value
         except Exception as e:
-            print(str(e))
+            log.exception(e)
 
     def __call__(self, value):
         """Here's where the magic happens"""
