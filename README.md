@@ -195,4 +195,4 @@ The wireless kit is not working so well, because the battery doesn't hold charge
 
 ### 2022-05-22 GBE
 
-Let it happen
+<s>Let it happen</s> It happened, a video will be published later

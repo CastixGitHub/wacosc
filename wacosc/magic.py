@@ -1,18 +1,23 @@
+from typing import TYPE_CHECKING
 import liblo
 import logging
+
+
+if TYPE_CHECKING:
+    from wacosc.osc import OSCInterface
 
 
 log = logging.getLogger(__name__)
 
 
 class MagicHandler:
-    def __init__(self, osc, kind, key, config):
+    def __init__(self, osc: 'OSCInterface', kind: str, key: str, config: dict):
         self.osc = osc
         self.kind = kind  # eg stylus
         self.key = key  # eg tilx_x
         self.config = config
 
-    def plug(self, config, value):
+    def plug(self, config: dict, value: int | str):
         try:
             plugin_name = config['plugin_name']
             plugin = self.osc.plugin_by_name(plugin_name)
@@ -28,7 +33,7 @@ class MagicHandler:
 
     def __call__(self, value):
         """Here's where the magic happens"""
-        print(value, self.config)
+        print(self.key, value, self.config)
         if isinstance(list(self.config.values())[0], dict):
             for subkey, cfg in self.config.items():
                 try:

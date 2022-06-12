@@ -14,12 +14,12 @@ def main(stdscr):
 
         i = 0
         for k, v in pad.items():
-            stdscr.addstr(i, 35, f"{k.upper().replace('_', ' ')}: {v}")
+            stdscr.addstr(i, 21, f"{k.upper().replace('_', ' ')}: {v}")
             i += 1
 
         i = 0
         for k, v in touch.items():
-            stdscr.addstr(i, 58, f"{k.upper().replace('_', ' ')}: {v}")
+            stdscr.addstr(i, 45, f"{k.upper().replace('_', ' ')}: {v}")
             i += 1
 
         stdscr.refresh()

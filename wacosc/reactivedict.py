@@ -55,3 +55,6 @@ class ReactiveDict:
         if strip is None:
             strip = (self['handler'], self['prefix'], self['previous_key'])
         return [v for v in self.__dict__.values() if v not in strip]
+
+    def __str__(self):
+        return f'ReactiveDict: {dict(self.items())}'

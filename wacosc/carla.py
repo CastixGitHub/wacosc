@@ -1,10 +1,14 @@
 """WacOsc carla.py - where handlers are defined."""
+from typing import Iterable
+from wacosc.osc import OSCInterface
+from wacosc.reactivedict import ReactiveDict
 from wacosc.plugins import ranges
-from wacosc.magic import MagicHandler
 from wacosc.config import stylus, pad, touch
+import logging
 import liblo
-import atexit
 
+
+log = logging.getLogger(__name__)
 
 # Carla callback opcodes
 # https://github.com/falkTX/Carla/blob/2a6a7de04f75daf242ae9d8c99b349ea7dc6ff7f/source/backend/CarlaBackend.h
@@ -13,82 +17,51 @@ ENGINE_CALLBACK_PLUGIN_REMOVED = 2
 ENGINE_CALLBACK_PARAMETER_VALUE_CHANGED = 5
 
 
-# based on https://github.com/wvengen/lpx-controller/blob/561b5db81d0a9136d529e4262016345a255d95e8/sequencer.py that was
-# based on https://github.com/dsacre/mididings/blob/master/mididings/extra/osc.py
-class OSCInterface:
-    plugins = {}
+class CarlaInterface(OSCInterface):
 
-    def __new__(cls, stylus, pad, touch, carla_port=22752, listen_port=22755):
-        obj = object.__new__(cls)
-        for key, value in stylus.items():
-            setattr(obj, f'on_stylus_{key}', MagicHandler(obj, 'stylus', key, value))
-        for key, value in pad.items():
-            setattr(obj, f'on_pad_{key}', MagicHandler(obj, 'pad', key, value))
-        for key, value in touch.items():
-            if key in (str(i) for i in range(10)):
-                for k, v in value.items():
-                    setattr(obj, f'on_touch{key}_{k}', MagicHandler(obj, 'touch', key, v))
-            else:
-                setattr(obj, f'on_touch_{key}', MagicHandler(obj, 'touch', key, value))
-        return obj
-
-    def __init__(self, stylus, pad, touch, carla_port=22752, listen_port=22755):  # TODO find free listen port
-        self.carla_addr_tcp = liblo.Address('127.0.0.1', carla_port, proto=liblo.TCP)
-        self.carla_addr_udp = liblo.Address('127.0.0.1', carla_port, proto=liblo.UDP)
-        self.listen_port = listen_port
-        self.on_start()
-        atexit.register(self.on_exit)
+    def __init__(
+        self,
+        *args: Iterable[dict],
+        listen_port: int = 22755,
+        carla_host: str = '127.0.0.1',
+        carla_port: int = 22752,
+    ):
+        self.addresses['carla_tcp'] = liblo.Address(carla_host, carla_port, proto=liblo.TCP)
+        self.addresses['carla_udp'] = liblo.Address(carla_host, carla_port, proto=liblo.UDP)
+        super().__init__(*args, listen_port=listen_port)
 
     def on_start(self):
-        print('starting osc')
-        self.server_tcp = liblo.ServerThread(self.listen_port, proto=liblo.TCP)
-        self.server_tcp.register_methods(self)
-        self.server_tcp.start()
-        self.server_udp = liblo.ServerThread(self.listen_port, proto=liblo.UDP)
-        self.server_udp.register_methods(self)
-        self.server_udp.start()
-        liblo.send(self.carla_addr_tcp, '/register', 'osc.tcp://127.0.0.1:%d/Carla' % self.listen_port)
-        liblo.send(self.carla_addr_udp, '/register', 'osc.udp://127.0.0.1:%d/Carla' % self.listen_port)
+        super().on_start()
+        liblo.send(self.addresses['carla_tcp'], '/register', 'osc.tcp://127.0.0.1:%d/Carla' % self.listen_port)
+        liblo.send(self.addresses['carla_udp'], '/register', 'osc.udp://127.0.0.1:%d/Carla' % self.listen_port)
         # TODO query all current parameter values to set all buttons to the correct value
 
     def on_exit(self):
-        # Registering with the full URL gives an error about the wrong owner, just the IP-address seems to work.
-        # liblo.send(self.carla_addr_tcp, '/unregister', 'osc.tcp://127.0.0.1:%d/Carla' % self.listen_port)
-        # liblo.send(self.carla_addr_udp, '/unregister', 'osc.udp://127.0.0.1:%d/Carla' % self.listen_port)
-        liblo.send(self.carla_addr_udp, '/unregister', '127.0.0.1')
-        self.server_udp.stop()
-        del self.server_udp
-        liblo.send(self.carla_addr_tcp, '/unregister', '127.0.0.1')
-        self.server_tcp.stop()
-        del self.server_tcp
+        liblo.send(self.addresses['carla_udp'], '/unregister', '127.0.0.1')
+        liblo.send(self.addresses['carla_tcp'], '/unregister', '127.0.0.1')
+        super().on_exit()
 
+    @staticmethod
     @liblo.make_method('/Carla/info', 'iiiihiisssssss')
-    def on_carla_info(self, path, args):
-        print('INFO', path, args)
+    def on_carla_info(path, args):
+        log.info('Carla INFO %s %s', path, args)
 
     @liblo.make_method('/Carla/cb', 'iiiiifs')
     def on_carla_cb(self, path, args):
         # https://github.com/falkTX/Carla/blob/de8e0d3bd9cc4ab76cbea9f53352c92d89266ea2/source/frontend/carla_control.py#L337
         action, plugin_id, value1, value2, value3, valuef, value_str = args
-        print('CB', path, args)
+        log.info('Carla CB %s %s', path, args)
         if action == ENGINE_CALLBACK_PLUGIN_ADDED:
             self.plugins[plugin_id] = {
                 'name': value_str,
                 'ranges': ranges[value_str],
             }
-            if value_str == 'Noize Mak3r':
-                self.note_on(plugin_id)  # immediatly make noize!
+            # if value_str == 'Noize Mak3r':
+            #     self.note_on(plugin_id)  # immediatly make noize!
         elif action == ENGINE_CALLBACK_PLUGIN_REMOVED:
             del self.plugins[plugin_id]
 
         print(self.plugins)
-
-    def plugin_by_name(self, name):
-        for _id, _dict in self.plugins.items():
-            if _dict['name'] == name:
-                _dict = _dict.copy()
-                _dict['_id'] = _id
-                return _dict
 
     def note_on(self, plugin_id, note=60, velocity=127):
         liblo.send(
@@ -98,7 +71,7 @@ class OSCInterface:
         )
 
 
-carla = OSCInterface(stylus, pad, touch)
+carla = CarlaInterface(stylus, pad, touch)
 
 
 if __name__ == '__main__':

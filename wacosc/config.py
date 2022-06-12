@@ -31,6 +31,7 @@ def normalize_touchring(v):
 
 
 stylus = {
+    'prefix': 'stylus',
     'x': {
         'plugin_name': 'Noize Mak3r',
         'parameter_name': 'osc1tune',
@@ -63,6 +64,7 @@ stylus = {
     },
 }
 pad = {
+    'prefix': 'pad',
     'touchring': {
         'plugin_name': 'Noize Mak3r',
         'parameter_name': 'osc2fm',
@@ -71,6 +73,7 @@ pad = {
 }
 
 touch = {
+    'prefix': 'touch',
     'x': {
         'plugin_name': 'rkr NoiseGate',
         'parameter_name': 'Lowpass Filter',
