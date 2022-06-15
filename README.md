@@ -194,5 +194,5 @@ The wireless kit is not working so well, because the battery doesn't hold charge
 ## see it in action
 
 ### 2022-05-22 GBE
-
-Let it happen
+[https://peratubo.chmod.cyou/videos/watch/78b1f0b8-1a15-4f99-b530-0568e33ac6c7](
+https://peratubo.chmod.cyou/videos/watch/78b1f0b8-1a15-4f99-b530-0568e33ac6c7)
