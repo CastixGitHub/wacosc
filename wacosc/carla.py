@@ -56,8 +56,8 @@ class CarlaInterface(OSCInterface):
                 'name': value_str,
                 'ranges': ranges[value_str],
             }
-            # if value_str == 'Noize Mak3r':
-            #     self.note_on(plugin_id)  # immediatly make noize!
+            if value_str == 'Noize Mak3r':
+                self.note_on(plugin_id)  # immediatly make noize!
         elif action == ENGINE_CALLBACK_PLUGIN_REMOVED:
             del self.plugins[plugin_id]
 
@@ -65,7 +65,7 @@ class CarlaInterface(OSCInterface):
 
     def note_on(self, plugin_id, note=60, velocity=127):
         liblo.send(
-            self.carla_addr_tcp,
+            self.addresses['carla_tcp'],
             f'/Carla/{plugin_id}/note_on',
             plugin_id, note, velocity
         )

@@ -49,7 +49,7 @@ class MagicHandler:
 
     def send(self, plugin_id, parameter_id, value, udp=True):
         liblo.send(
-            self.osc.carla_addr_udp if udp else self.osc.carla_addr_tcp,
+            self.osc.addresses['carla_udp'] if udp else self.osc.addresses['carla_tcp'],
             f'/Carla/{plugin_id}/set_parameter_value',
             parameter_id,
             value,
