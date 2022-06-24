@@ -18,6 +18,9 @@ class MagicHandler:
         self.config = config
 
     def plug(self, config: dict, value: int | str):
+        from wacosc.recorder import RecorderInterface
+        if isinstance(self.osc, RecorderInterface):
+            return (self.kind, self.key, value)
         try:
             plugin_name = config['plugin_name']
             plugin = self.osc.plugin_by_name(plugin_name)
@@ -33,24 +36,17 @@ class MagicHandler:
 
     def __call__(self, value):
         """Here's where the magic happens"""
-        print(self.key, value, self.config)
-        if isinstance(list(self.config.values())[0], dict):
+        log.info(self.key, value, self.config)
+        
+        if hasattr(self.config, 'values') and isinstance(list(self.config.values())[0], dict):
             for subkey, cfg in self.config.items():
                 try:
                     if value:
-                        self.send(*self.plug(cfg, value))
+                        self.osc.send(*self.plug(cfg, value))
                 except TypeError as ex:
                     log.debug(str(ex))
         else:
             try:
-                self.send(*self.plug(self.config, value))
+                self.osc.send(*self.plug(self.config, value))
             except TypeError as ex:
                 log.debug(str(ex))
-
-    def send(self, plugin_id, parameter_id, value, udp=True):
-        liblo.send(
-            self.osc.addresses['carla_udp'] if udp else self.osc.addresses['carla_tcp'],
-            f'/Carla/{plugin_id}/set_parameter_value',
-            parameter_id,
-            value,
-        )

@@ -3,7 +3,6 @@ from typing import Iterable
 from wacosc.osc import OSCInterface
 from wacosc.reactivedict import ReactiveDict
 from wacosc.plugins import ranges
-from wacosc.config import stylus, pad, touch
 import logging
 import liblo
 
@@ -57,22 +56,28 @@ class CarlaInterface(OSCInterface):
                 'ranges': ranges[value_str],
             }
             if value_str == 'Noize Mak3r':
-                self.note_on(plugin_id)  # immediatly make noize!
+                self.note(plugin_id)  # immediatly make noize!
         elif action == ENGINE_CALLBACK_PLUGIN_REMOVED:
             del self.plugins[plugin_id]
 
         print(self.plugins)
 
-    def note_on(self, plugin_id, note=60, velocity=127):
+    def note(self, plugin_id, note=60, velocity=127, active=True):
         liblo.send(
             self.addresses['carla_tcp'],
-            f'/Carla/{plugin_id}/note_on',
+            f'/Carla/{plugin_id}/note_{"on" if active else "off"}',
             plugin_id, note, velocity
         )
 
-
-carla = CarlaInterface(stylus, pad, touch)
+    def send(self, plugin_id, parameter_id, value, udp=True):
+        liblo.send(
+            self.addresses['carla_udp'] if udp else self.addresses['carla_tcp'],
+            f'/Carla/{plugin_id}/set_parameter_value',
+            parameter_id,
+            value,
+        )
 
 
 if __name__ == '__main__':
+    carla = CarlaInterface(stylus, pad, touch)
     print(carla.plugins)

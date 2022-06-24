@@ -1,28 +1,21 @@
 from wacosc.eviocgname import find_event_files
-from wacosc.carla import carla
+from wacosc import config
+from wacosc.carla import CarlaInterface
+from wacosc.recorder import RecorderInterface
 from wacosc.reactivedict import ReactiveDict
 from select import poll, POLLIN
 from struct import unpack
+from sys import argv
 import logging
 
 
 log = logging.getLogger(__name__)
 
+osc = None
 
-stylus = ReactiveDict(carla, 'stylus', {
-    'x': 0,
-    'y': 0,
-    'tilt_x': 0,
-    'tilt_y': 0,
-    'erasing': 'NO',
-    'near': 'NO',
-    'pressing': 'OFF',
-    'pressure': 0,
-    'distance': 0,
-    'stylus_button_1': 'OFF',
-    'stylus_button_2': 'OFF',
-    'unknown': '',
-})
+stylus = None
+pad = None
+touch = None
 
 
 def handle_stylus(timestamp, usecond, type_, code, value):
@@ -68,9 +61,6 @@ def handle_stylus(timestamp, usecond, type_, code, value):
                     stylus['unknown'] = f'ABS {code} {value}'
 
 
-pad = ReactiveDict(carla, 'pad', {
-    'unknown': '',
-})
 def handle_pad(timestamp, usecond, type_, code, value):
     match type_:
         case 0:
@@ -82,7 +72,7 @@ def handle_pad(timestamp, usecond, type_, code, value):
                 case 256:
                     # how can we know the led value?
                     pad['main_button'] = 'ON' if value else 'OFF'
-                case c if 257 <= c < 362:
+                case c if 257 <= c < 262:
                     pad[f'button_{code}'] = 'ON' if value else 'OFF'
                 case _:
                     pad['unknown'] = f'BUTTONS {code} {value}'
@@ -96,14 +86,6 @@ def handle_pad(timestamp, usecond, type_, code, value):
                     pad['unknown'] = f'ABS {code} {value}'
 
 
-touch = ReactiveDict(carla, 'touch', {
-    'unknown': '',
-    'x': 0,
-    'y': 0,
-    # 'touching': 'NO',
-    'fingers': 0,
-    '0': {}
-})
 last_slot = '0'
 def handle_touch(timestamp, usecond, type_, code, value):
     global last_slot
@@ -154,7 +136,7 @@ def handle_touch(timestamp, usecond, type_, code, value):
                 case 47:
                     last_slot = str(value)
                     if last_slot not in touch:
-                        touch[last_slot] = {}
+                        touch[last_slot] = {'x': 0, 'y': 0}
                 case 53:
                     touch[last_slot]['x'] = value
                 case 54:
@@ -186,6 +168,76 @@ def handle_wacom():
     for f in files.values():
         f.close()
 
-killing = False
-t = Thread(target=handle_wacom)
-t.start()
+
+if __name__ == '__main__':
+    osc = argv[1] or 'carla'
+    match osc:
+        case 'carla':
+            osc = CarlaInterface(config.stylus, config.pad, config.touch)
+        case _:
+            osc = RecorderInterface(
+                {
+                 'prefix': 'stylus',
+                 'x': 0,
+                 'y': 0,
+                 'tilt_x': 0,
+                 'tilt_y': 0,
+                 'erasing': 'NO',
+                 'near': 'NO',
+                 'pressing': 'OFF',
+                 'pressure': 0,
+                 'distance': 0,
+                 'stylus_button_1': 'OFF',
+                 'stylus_button_2': 'OFF',
+                }, {
+                 'prefix': 'pad',
+                 'touchring': 0,
+                 'main_button': 'OFF',
+                 **{f'button_{code}': 'OFF' for code in range(257, 262)},
+                }, {
+                 'prefix': 'touch',
+                 'minor': 0,
+                 'major': 0,
+                 'x': 0,
+                 'y': 0,
+                }, *({
+                    'prefix': f'touch{n}',
+                    'major': 0,
+                    'minor': 0,
+                    'x': 0,
+                    'y': 0,
+                    } for n in range(10)
+                ),
+            )
+
+
+    stylus = ReactiveDict(osc, 'stylus', {
+        'x': 0,
+        'y': 0,
+        'tilt_x': 0,
+        'tilt_y': 0,
+        'erasing': 'NO',
+        'near': 'NO',
+        'pressing': 'OFF',
+        'pressure': 0,
+        'distance': 0,
+        'stylus_button_1': 'OFF',
+        'stylus_button_2': 'OFF',
+        'unknown': '',
+    })
+    pad = ReactiveDict(osc, 'pad', {
+        'unknown': '',
+    })
+    touch = ReactiveDict(osc, 'touch', {
+        'unknown': '',
+        'x': 0,
+        'y': 0,
+        # 'touching': 'NO',
+        'fingers': 0,
+        '0': {}
+    })
+
+    log.info('using %s', osc)
+    killing = False
+    t = Thread(target=handle_wacom)
+    t.start()

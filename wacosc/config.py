@@ -13,6 +13,7 @@ def by_float_steps(v, count, _max):
     )
 
 
+# touchring is memoized to workaroud a quirk
 memoized_touchring = 0.0
 
 

@@ -1,14 +1,19 @@
 from typing import Iterable
+from abc import ABC, abstractmethod
 from wacosc.magic import MagicHandler
 from wacosc.reactivedict import ReactiveDict
 import liblo
 import atexit
+import logging
+
+
+log = logging.getLogger(__name__)
 
 
 # based on https://github.com/wvengen/lpx-controller/blob/561b5db81d0a9136d529e4262016345a255d95e8/sequencer.py that was
 # based on https://github.com/dsacre/mididings/blob/master/mididings/extra/osc.py
 # TODO find free listen port
-class OSCInterface:
+class OSCInterface(ABC):
     plugins = {}
     addresses = {}
 
@@ -17,10 +22,12 @@ class OSCInterface:
         obj = object.__new__(cls)
         for arg in args:
             for key, value in arg.items():
+                magic_key = f"on_{arg['prefix']}{arg.get('previous_key', '')}_{key}"
+                log.warning('configuring %s', magic_key)
                 setattr(
                     obj,
-                    f"on_{arg['prefix']}{arg.get('previous_key', '')}_{key}",
-                    MagicHandler(obj, arg['prefix'], key, value)
+                    magic_key,
+                    MagicHandler(obj, arg['prefix'], magic_key[4 + len(arg['prefix']):], value)
                 )
         return obj
 
@@ -35,7 +42,7 @@ class OSCInterface:
         atexit.register(self.on_exit)
 
     def on_start(self):
-        print('starting osc')
+        logging.info('starting osc')
         self.server_tcp = liblo.ServerThread(self.listen_port, proto=liblo.TCP)
         self.server_tcp.register_methods(self)
         self.server_tcp.start()
@@ -55,3 +62,7 @@ class OSCInterface:
                 _dict = _dict.copy()
                 _dict['_id'] = _id
                 return _dict
+
+    @abstractmethod
+    def send(self, *args, **kwargs):
+        pass

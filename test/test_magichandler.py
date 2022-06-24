@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+import pytest
 from wacosc.magic import MagicHandler
 
 cfg_flat = {
@@ -22,7 +23,13 @@ def test_magichandler_nested():
     mh(128)
 
 
-def test_magichandler_empty_cfg(caplog):
+def test_magichandler_empty_cfg():
+    mh = MagicHandler(MagicMock(), 'kind', 'key', {})
+    with pytest.raises(IndexError):
+        mh(128)
+
+    
+def test_magichandler_plugin_name_only(caplog):
     mh = MagicHandler(MagicMock(), 'kind', 'key', {'plugin_name': ''})
     mh(128)
-    assert False, caplog.records
+    assert 'parameter_name' in caplog.records[0].message
