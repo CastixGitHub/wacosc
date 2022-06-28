@@ -1,7 +1,7 @@
 from typing import Iterable
 from abc import ABC, abstractmethod
 from wacosc.magic import MagicHandler
-from wacosc.reactivedict import ReactiveDict
+from wacosc.reactive import ReactiveDict
 import liblo
 import atexit
 import logging

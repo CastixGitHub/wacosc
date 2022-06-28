@@ -1,4 +1,4 @@
-from wacosc.reactivedict import ReactiveDict, ReactiveList
+from wacosc.reactive import ReactiveDict, ReactiveList
 from pytest import raises
 from functools import partial
 import logging

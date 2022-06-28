@@ -1,6 +1,6 @@
 from typing import Iterable
 from wacosc.osc import OSCInterface
-from wacosc.reactivedict import ReactiveDict
+from wacosc.reactive import ReactiveDict
 import logging
 import liblo
 

@@ -2,7 +2,7 @@ from wacosc.eviocgname import find_event_files
 from wacosc import config
 from wacosc.carla import CarlaInterface
 from wacosc.recorder import RecorderInterface
-from wacosc.reactivedict import ReactiveDict
+from wacosc.reactive import ReactiveDict
 from select import poll, POLLIN
 from struct import unpack
 from sys import argv

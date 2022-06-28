@@ -1,7 +1,7 @@
 """WacOsc carla.py - where handlers are defined."""
 from typing import Iterable
 from wacosc.osc import OSCInterface
-from wacosc.reactivedict import ReactiveDict
+from wacosc.reactive import ReactiveDict
 from wacosc.plugins import ranges
 import logging
 import liblo
