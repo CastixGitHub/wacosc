@@ -1,29 +1,150 @@
 # a different approach was before authored by Rick Copeland for Ming
 # https://github.com/TurboGears/Ming/blob/master/ming/odm/icollection.py
 # this is much different because doesn't use a tracker, this just reacts
+from typing import Iterable
 import logging
 
 
 log = logging.getLogger(__name__)
 
 
+class ReactiveList(list):
+    def __init__(self, handler, key, initial_list, init_skips_handler=True):
+        self._list = initial_list
+        self.handler = handler
+        self.magic_key = f'on_{key}'
+        self.inhibit = init_skips_handler
+
+    def enable(self):
+        object.__setattr__(self, 'inhibit', False)
+        for sub in self._list:
+            if isinstance(sub, (ReactiveDict, ReactiveList)):
+                sub.enable()
+
+    def do(self):
+        if not self.inhibit:
+            mh = getattr(self.handler, self.magic_key)
+            mh(self._list)
+
+    def __repr__(self):
+        return f'<ReactiveList: {self._list}'
+
+    def __setitem__(self, key, value):
+        if isinstance(key, slice):
+            if isinstance(value, list):
+                self._list = self._list[key.start:key.stop:key.step] = value
+            elif isinstance(value, Iterable):
+                self._list = self._list[key.start:key.stop:key.step] = list(value)
+        else:
+            self._list[key] = value
+        self.do()
+
+    def __delitem__(self, key):
+        if isinstance(key, slice):
+            del self[key.start:key.stop:key.step]
+        else:
+            del self[key]
+        self.do()
+
+    def __add__(self, other):
+        self._list += other
+        self.do()
+        return self
+
+    def __radd__(self, other):
+        self._list = other + self._list
+        self.do()
+        return self
+
+    def __iadd__(self, other):
+        self._list.append(other)
+        self.do()
+        return self
+
+    def __mul__(self, other):
+        self._list *= other
+        self.do()
+        return self
+
+    def __rmul__(self, other):
+        self._list = other * self._list
+        self.do()
+        return self
+
+    def __imul__(self, other):
+        self._list *= other
+        self.do()
+        return self
+
+    def __contains__(self, key):
+        return key in self._list
+
+    def append(self, value):
+        self._list.append(value)
+        self.do()
+        return self
+
+    def extend(self, iterable):
+        self._list.extend(iterable)
+        self.do()
+        return self
+
+    def insert(self, index, value):
+        self._list.insert(index, value)
+        self.do()
+        return self
+
+    def pop(self, index=-1):
+        self._list.pop(index)
+        self.do()
+        return self
+
+    def remove(self, value):
+        self._list.remove(value)
+        self.do()
+        return self
+
+    def replace(self, iterable):
+        self._list[:] = iterable
+        self.do()
+        return self
+
+
 class ReactiveDict:
-    def __init__(self, handler, prefix, initial_data, init_skips_handler=False, previous_key=''):
-        object.__setattr__(self, 'inhibit', True)
+    def __init__(self, handler, prefix, initial_data, init_skips_handler=True, previous_key=''):
+        object.__setattr__(self, 'inhibit', init_skips_handler)
         self.handler = handler
         if not getattr(handler, f'on_{prefix}_prefix', False):
             setattr(self.handler, f'on_{prefix}_prefix', lambda _: None)
         self.prefix = prefix
         self.previous_key = previous_key
         for k, v in initial_data.items():
-            if not init_skips_handler:
-                self[k] = v
-            else:
-                object.__setattr__(self, k, v)
+            self[k] = v
+        self.enable()
+
+    def enable(self):
         object.__setattr__(self, 'inhibit', False)
+        for sub in self.values():
+            if isinstance(sub, (ReactiveDict, ReactiveList)):
+                sub.enable()
 
     def __setitem__(self, key, value):
-        if not isinstance(value, dict):
+        if isinstance(value, dict):
+            self.__dict__[key] = ReactiveDict(
+                self.handler,
+                self.prefix,
+                value,
+                init_skips_handler=True,
+                previous_key=key
+            )
+        elif isinstance(value, list):
+            self.__dict__[key] = ReactiveList(
+                self.handler,
+                f'{self.prefix}{self.previous_key}_{key}',
+                value,
+                init_skips_handler=True,
+            )
+        else:
             self.__dict__[key] = value
             if key not in ('__dict__', 'handler', 'prefix', 'previous_key', 'inhibit'):
                 magic_key = f'on_{self.prefix}{self.previous_key}_{key}'
@@ -34,14 +155,6 @@ class ReactiveDict:
                     mh = lambda v: None
                 if not self.inhibit:
                     mh(value)
-        else:
-            self.__dict__[key] = ReactiveDict(
-                self.handler,
-                self.prefix,
-                value,
-                init_skips_handler=True,
-                previous_key=key
-            )
 
     def __contains__(self, key):
         return key in self.__dict__.keys()
@@ -63,8 +176,8 @@ class ReactiveDict:
 
     def values(self, strip=None):
         if strip is None:
-            strip = (self['handler'], self['prefix'], self['previous_key'])
-        return [v for v in self.__dict__.values() if v not in strip]
+            strip = ('inhibit', 'handler', 'prefix', 'previous_key')
+        return [v for k, v in self.__dict__.items() if k not in strip]
 
     def __str__(self):
         return f'ReactiveDict: {dict(self.items())}'

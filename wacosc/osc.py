@@ -22,7 +22,7 @@ class OSCInterface(ABC):
         obj = object.__new__(cls)
         for arg in args:
             for key, value in arg.items():
-                magic_key = f"on_{arg['prefix']}{arg.get('previous_key', '')}_{key}"
+                magic_key = f"on_{arg['prefix']}_{key}"  # no previous key because it's the config
                 log.warning('configuring %s', magic_key)
                 setattr(
                     obj,
