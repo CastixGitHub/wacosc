@@ -1,7 +1,6 @@
 """WacOsc carla.py - where handlers are defined."""
 from typing import Iterable
 from wacosc.osc import OSCInterface
-from wacosc.reactive import ReactiveDict
 from wacosc.plugins import ranges
 import logging
 import liblo
@@ -76,8 +75,3 @@ class CarlaInterface(OSCInterface):
             parameter_id,
             value,
         )
-
-
-if __name__ == '__main__':
-    carla = CarlaInterface(stylus, pad, touch)
-    print(carla.plugins)
