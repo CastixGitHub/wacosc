@@ -66,23 +66,31 @@ def test_list(caplog):
     rd.a.append(1)
     assert "on_p_a called with [1]" in caplog.records[0].message
     rd.a[1:5] = (1, 2, 3, 4, 5)
-    assert "on_p_a called with [1, 1, 2, 3, 4, 5]" in caplog.records[1].message
+    assert "on_p_a called with [1, 1, 2, 3, 4, 5]" in caplog.records[-1].message
     rd.a * 2  # mul
-    assert "on_p_a called with [1, 1, 2, 3, 4, 5, 1, 1, 2, 3, 4, 5]" in caplog.records[2].message
+    assert "on_p_a called with [1, 1, 2, 3, 4, 5, 1, 1, 2, 3, 4, 5]" in caplog.records[-1].message
     rd.a.replace([1, 1, 2, 3, 4, 5])
-    assert "on_p_a called with [1, 1, 2, 3, 4, 5]" in caplog.records[3].message
+    assert "on_p_a called with [1, 1, 2, 3, 4, 5]" in caplog.records[-1].message
     rd.a *= 2  # imul
-    assert "on_p_a called with [1, 1, 2, 3, 4, 5, 1, 1, 2, 3, 4, 5]" in caplog.records[4].message
-    rd.a + 2
-    assert "on_p_a called with [1, 1, 2, 3, 4, 5, 1, 1, 2, 3, 4, 5, 2]" in caplog.records[5].message
+    assert "on_p_a called with [1, 1, 2, 3, 4, 5, 1, 1, 2, 3, 4, 5]" in caplog.records[-1].message
+    rd.a + [2]
+    assert "on_p_a called with [1, 1, 2, 3, 4, 5, 1, 1, 2, 3, 4, 5, 2]" in caplog.records[-1].message
     rd.a.replace([])
-    assert "on_p_a called with []" in caplog.records[6].message
+    assert "on_p_a called with []" in caplog.records[-1].message
     rd.a.extend([1, 2])
-    assert "on_p_a called with [1, 2]" in caplog.records[7].message
+    assert "on_p_a called with [1, 2]" in caplog.records[-1].message
     rd.a.insert(2, 5)
-    assert "on_p_a called with [1, 2, 5]" in caplog.records[8].message
+    assert "on_p_a called with [1, 2, 5]" in caplog.records[-1].message
     assert 5 in rd.a
     rd.a.pop()
-    assert "on_p_a called with [1, 2]" in caplog.records[9].message
+    assert "on_p_a called with [1, 2]" in caplog.records[-1].message
     rd.a.remove(2)
-    assert "on_p_a called with [1]" in caplog.records[10].message
+    assert "on_p_a called with [1]" in caplog.records[-1].message
+    rd.a.append([1, 2])
+    assert "on_p_a called with [1, <ReactiveList: [1, 2]>]" in caplog.records[-1].message
+    assert isinstance(rd.a[-1], ReactiveList)
+    rd.a.append({'a': 'A'})
+    assert "on_p_a called with [1, <ReactiveList: [1, 2]>, <ReactiveDict: {'a': 'A'}>]" in caplog.records[-1].message
+    assert isinstance(rd.a[-1], ReactiveDict)
+    rd.a[-1].b = 'B'
+    assert "on_p_a_b called with B" in caplog.records[-1].message

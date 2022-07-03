@@ -12,8 +12,9 @@ class ReactiveList(list):
     def __init__(self, handler, key, initial_list, init_skips_handler=True):
         self._list = initial_list
         self.handler = handler
-        self.magic_key = f'on_{key}'
+        self.magic_key = f'{key}'
         self.inhibit = init_skips_handler
+        self.enable()
 
     def enable(self):
         object.__setattr__(self, 'inhibit', False)
@@ -27,16 +28,36 @@ class ReactiveList(list):
             mh(self._list)
 
     def __repr__(self):
-        return f'<ReactiveList: {self._list}'
+        return f'<ReactiveList: {self._list}>'
+
+    def __getitem__(self, key):
+        return self._list[key]
+
+    def inherit(self, value):
+        if isinstance(value, list):
+            return ReactiveList(
+                self.handler,
+                self.magic_key,
+                value,
+                init_skips_handler=True
+            )
+        if isinstance(value, dict):
+            return ReactiveDict(
+                self.handler,
+                self.magic_key[3:],
+                value,
+                init_skips_handler=True,
+            )
+        return value
 
     def __setitem__(self, key, value):
         if isinstance(key, slice):
             if isinstance(value, list):
-                self._list = self._list[key.start:key.stop:key.step] = value
+                self._list[key.start:key.stop:key.step] = [self.inherit(sv) for sv in value]
             elif isinstance(value, Iterable):
-                self._list = self._list[key.start:key.stop:key.step] = list(value)
+                self._list[key.start:key.stop:key.step] = [self.inherit(sv) for sv in value]
         else:
-            self._list[key] = value
+            self._list[key] = self.inherit(value)
         self.do()
 
     def __delitem__(self, key):
@@ -57,7 +78,7 @@ class ReactiveList(list):
         return self
 
     def __iadd__(self, other):
-        self._list.append(other)
+        self._list.append(self.inherit(other))
         self.do()
         return self
 
@@ -80,17 +101,17 @@ class ReactiveList(list):
         return key in self._list
 
     def append(self, value):
-        self._list.append(value)
+        self._list.append(self.inherit(value))
         self.do()
         return self
 
     def extend(self, iterable):
-        self._list.extend(iterable)
+        self._list.extend((self.inherit(v) for v in iterable))
         self.do()
         return self
 
     def insert(self, index, value):
-        self._list.insert(index, value)
+        self._list.insert(index, self.inherit(value))
         self.do()
         return self
 
@@ -138,12 +159,15 @@ class ReactiveDict:
                 previous_key=key
             )
         elif isinstance(value, list):
-            self.__dict__[key] = ReactiveList(
-                self.handler,
-                f'{self.prefix}{self.previous_key}_{key}',
-                value,
-                init_skips_handler=True,
-            )
+            if isinstance(value, ReactiveList):
+                self.__dict__[key]._list = value._list
+            else:
+                self.__dict__[key] = ReactiveList(
+                    self.handler,
+                    f'on_{self.prefix}{self.previous_key}_{key}',
+                    value,
+                    init_skips_handler=True,
+                )
         else:
             self.__dict__[key] = value
             if key not in ('__dict__', 'handler', 'prefix', 'previous_key', 'inhibit'):
@@ -180,4 +204,8 @@ class ReactiveDict:
         return [v for k, v in self.__dict__.items() if k not in strip]
 
     def __str__(self):
-        return f'ReactiveDict: {dict(self.items())}'
+        return f'<ReactiveDict: {dict(self.items())}>'
+
+    def __repr__(self):
+        return str(self)
+
