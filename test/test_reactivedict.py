@@ -21,10 +21,19 @@ def test_plain(caplog):
     assert 'on_p_a called with A' in caplog.records[0].message
 
     rd['a'] = 'AA'
+    assert rd['a'] == 'AA'
     assert 'on_p_a called with AA' in caplog.records[1].message
 
     rd.b = 'B'
     assert 'on_p_b called with B' in caplog.records[2].message
+
+
+def test_not_handled(caplog):
+    class O: pass
+    o = O()
+    rd = ReactiveDict(o, 'p', {'a': ''})
+    assert o.on_p_prefix is not None
+    assert 'on_p_a not configured' in caplog.records[0].message
 
 
 def test_getattr():
@@ -67,8 +76,10 @@ def test_list(caplog):
     assert "on_p_a called with [1]" in caplog.records[0].message
     rd.a[1:5] = (1, 2, 3, 4, 5)
     assert "on_p_a called with [1, 1, 2, 3, 4, 5]" in caplog.records[-1].message
+    rd.a[0] = 9
+    assert "on_p_a called with [9, 1, 2, 3, 4, 5]" in caplog.records[-1].message
     rd.a * 2  # mul
-    assert "on_p_a called with [1, 1, 2, 3, 4, 5, 1, 1, 2, 3, 4, 5]" in caplog.records[-1].message
+    assert "on_p_a called with [9, 1, 2, 3, 4, 5, 9, 1, 2, 3, 4, 5]" in caplog.records[-1].message
     rd.a.replace([1, 1, 2, 3, 4, 5])
     assert "on_p_a called with [1, 1, 2, 3, 4, 5]" in caplog.records[-1].message
     rd.a *= 2  # imul
@@ -94,3 +105,18 @@ def test_list(caplog):
     assert isinstance(rd.a[-1], ReactiveDict)
     rd.a[-1].b = 'B'
     assert "on_p_a_b called with B" in caplog.records[-1].message
+
+    rd.a.enable()  # just to cover line 23 (at the time of writing)
+
+    del rd.a[:]
+    assert "on_p_a called with []" in caplog.records[-1].message
+    rd.a.append(1)
+    del rd.a[0]
+    assert "on_p_a called with []" in caplog.records[-1].message
+
+    rd.a = [5] + rd.a
+    assert "on_p_a called with [5]" in caplog.records[-1].message
+    rd.a += [4]
+    assert "on_p_a called with [5, 4]" in caplog.records[-1].message
+    rd.a = 3 * rd.a
+    assert "on_p_a called with [5, 4, 5, 4, 5, 4]" in caplog.records[-1].message

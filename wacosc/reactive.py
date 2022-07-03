@@ -52,19 +52,16 @@ class ReactiveList(list):
 
     def __setitem__(self, key, value):
         if isinstance(key, slice):
-            if isinstance(value, list):
-                self._list[key.start:key.stop:key.step] = [self.inherit(sv) for sv in value]
-            elif isinstance(value, Iterable):
-                self._list[key.start:key.stop:key.step] = [self.inherit(sv) for sv in value]
+            self._list[key.start:key.stop:key.step] = [self.inherit(sv) for sv in value]
         else:
             self._list[key] = self.inherit(value)
         self.do()
 
     def __delitem__(self, key):
         if isinstance(key, slice):
-            del self[key.start:key.stop:key.step]
+            del self._list[key.start:key.stop:key.step]
         else:
-            del self[key]
+            del self._list[key]
         self.do()
 
     def __add__(self, other):
@@ -78,7 +75,7 @@ class ReactiveList(list):
         return self
 
     def __iadd__(self, other):
-        self._list.append(self.inherit(other))
+        self._list.extend(other)
         self.do()
         return self
 
